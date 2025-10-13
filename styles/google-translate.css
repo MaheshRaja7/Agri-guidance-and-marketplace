@@ -1,0 +1,163 @@
+/* styles/google-translate.css */
+
+/* Header controls layout */
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.language-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Custom language selector styling */
+.language-selector {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  font-size: 0.9rem;
+  min-width: 120px;
+}
+
+.language-selector:focus {
+  outline: 2px solid #4CAF50;
+  border-color: #4CAF50;
+}
+
+/* Google Translate wrapper */
+.google-translate-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.translate-loading {
+  display: inline-block;
+  padding: 0.5rem;
+  color: #666;
+  font-size: 1.2rem;
+}
+
+/* Google Translate element customization */
+#google_translate_element {
+  display: inline-block;
+}
+
+/* Hide Google Translate banner */
+.goog-te-banner-frame.skiptranslate {
+  display: none !important;
+}
+
+body {
+  top: 0px !important;
+}
+
+/* Style the Google Translate select dropdown */
+.goog-te-gadget-simple {
+  background-color: white !important;
+  border: 1px solid #ddd !important;
+  border-radius: 4px !important;
+  padding: 0.5rem !important;
+  font-size: 0.9rem !important;
+  color: #333 !important;
+  cursor: pointer !important;
+}
+
+.goog-te-gadget-simple:hover {
+  border-color: #4CAF50 !important;
+}
+
+/* Style the translate icon */
+.goog-te-gadget-icon {
+  background-image: none !important;
+  background: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  display: inline-block !important;
+}
+
+.goog-te-gadget-icon:before {
+  content: "🌐";
+  font-size: 16px;
+}
+
+/* Hide the "Powered by" text */
+.goog-te-gadget-simple .goog-te-menu-value span:first-child {
+  display: none;
+}
+
+.goog-te-gadget-simple .goog-te-menu-value:before {
+  content: "Translate";
+  color: #666;
+}
+
+/* Style the dropdown when opened */
+.goog-te-menu-frame {
+  max-height: 300px !important;
+  overflow-y: auto !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid #ddd !important;
+  border-radius: 4px !important;
+}
+
+/* Language status indicator */
+.language-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: #666;
+  padding: 0.25rem 0.5rem;
+  background: #f5f5f5;
+  border-radius: 12px;
+}
+
+.language-status.active {
+  background: #e8f5e8;
+  color: #2e7d32;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .language-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+  }
+  
+  .language-selector {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .google-translate-wrapper {
+    width: 100%;
+  }
+  
+  .goog-te-gadget-simple {
+    width: 100% !important;
+    text-align: center !important;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .language-selector {
+    background: #333;
+    border-color: #555;
+    color: white;
+  }
+  
+  .goog-te-gadget-simple {
+    background-color: #333 !important;
+    border-color: #555 !important;
+    color: white !important;
+  }
+  
+  .translate-loading {
+    color: #ccc;
+  }
+}
