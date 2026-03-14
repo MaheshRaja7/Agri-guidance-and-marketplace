@@ -4,10 +4,24 @@ import { useRouter } from "next/navigation"
 import Header from "../../components/Header"
 import Chatbot from "../../components/Chatbot"
 
+import { useSearchParams } from "next/navigation"
+import { Suspense } from 'react'
+
 export default function ChatPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ChatContent />
+    </Suspense>
+  )
+}
+
+function ChatContent() {
   const [currentLanguage, setCurrentLanguage] = useState("en")
   const [user, setUser] = useState(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const location = searchParams.get('location') ? decodeURIComponent(searchParams.get('location')!) : undefined
+  const soilType = searchParams.get('soilType') ? decodeURIComponent(searchParams.get('soilType')!) : undefined
 
   useEffect(() => {
     const savedUser = localStorage.getItem("user")
@@ -24,8 +38,6 @@ export default function ChatPage() {
   return (
     <div>
       <Header
-        currentLanguage={currentLanguage}
-        onLanguageChange={setCurrentLanguage}
         user={user}
         onLogout={() => {
           setUser(null)
@@ -57,7 +69,7 @@ export default function ChatPage() {
               overflow: "hidden",
             }}
           >
-            <Chatbot isOpen={true} onClose={() => {}} user={user} />
+            <Chatbot isOpen={true} onClose={() => { }} user={user} initialLocation={location} initialSoilType={soilType} />
           </div>
         </div>
 

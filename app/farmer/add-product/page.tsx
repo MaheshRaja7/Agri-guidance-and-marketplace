@@ -1,296 +1,174 @@
-"use client"
-import { useState, useEffect } from "react"
-import type React from "react"
-import { useRouter } from "next/navigation"
-import Header from "../../../components/Header"
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
+import Header from "@/components/Header";
 
 export default function AddProductPage() {
-  const [currentLanguage, setCurrentLanguage] = useState("en")
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState("")
-  const router = useRouter()
-
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    description: "",
     category: "",
     price: "",
-    quantity: "",
-    unit: "",
-    location: "",
-    harvestDate: "",
-  })
+    stock: "",
+    description: "",
+    image: "", // We will store base64 or URL
+    unit: "kg",
+  });
 
-  const categories = [
-    "Vegetables",
-    "Fruits",
-    "Grains",
-    "Pulses",
-    "Spices",
-    "Herbs",
-    "Dairy",
-    "Organic",
-    "Seeds",
-    "Others",
-  ]
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const units = ["kg", "gram", "liter", "piece", "dozen", "bundle", "bag", "quintal", "ton"]
+  const handleCategoryChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, category: value }));
+  };
 
-  useEffect(() => {
-    const savedUser = localStorage.getItem("user")
-    if (savedUser) {
-      const userData = JSON.parse(savedUser)
-      setUser(userData)
-
-      if (userData.userType !== "farmer") {
-        router.push("/marketplace")
-        return
-      }
-
-      // Pre-fill location from user data
-      setFormData((prev) => ({
-        ...prev,
-        location: userData.city || "",
-      }))
-    } else {
-      router.push("/login")
-    }
-
-    const savedLanguage = localStorage.getItem("preferred-language")
-    if (savedLanguage) {
-      setCurrentLanguage(savedLanguage)
-    }
-  }, [router])
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
+  const handleUnitChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, unit: value }));
   }
 
+  // Handle image upload (convert to Base64 for simplicity in this demo)
+  // Ideally, upload to Cloudinary or AWS S3
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData((prev) => ({ ...prev, image: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
-    setSuccess("")
+    e.preventDefault();
+    setLoading(true);
 
     try {
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem("token");
       if (!token) {
-        setError("Please log in to add products")
-        setLoading(false)
-        return
+        alert("Please login first");
+        router.push("/login"); // Redirect to login
+        return;
       }
 
-      const response = await fetch("/api/products", {
+      const res = await fetch("/api/farmer/products", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
-      })
+        body: JSON.stringify({
+          ...formData,
+          price: parseFloat(formData.price),
+          stock: parseInt(formData.stock)
+        }),
+      });
 
-      const data = await response.json()
-
-      if (response.ok) {
-        setSuccess("Product added successfully!")
-        setFormData({
-          name: "",
-          description: "",
-          category: "",
-          price: "",
-          quantity: "",
-          unit: "",
-          location: user?.city || "",
-          harvestDate: "",
-        })
-        setTimeout(() => {
-          router.push("/marketplace")
-        }, 2000)
+      if (res.ok) {
+        alert("Product added successfully!");
+        router.push("/farmer/dashboard");
       } else {
-        setError(data.error || "Failed to add product")
+        const data = await res.json();
+        alert(data.error || "Failed to add product");
       }
     } catch (error) {
-      setError("Network error. Please try again.")
+      console.error("Error adding product:", error);
+      alert("Something went wrong");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
-
-  if (!user) {
-    return (
-      <div>
-        <Header currentLanguage={currentLanguage} onLanguageChange={setCurrentLanguage} />
-        <div className="container" style={{ textAlign: "center", paddingTop: "4rem" }}>
-          <div className="spinner"></div>
-          <p>Loading...</p>
-        </div>
-      </div>
-    )
-  }
+  };
 
   return (
     <div>
-      <Header
-        currentLanguage={currentLanguage}
-        onLanguageChange={setCurrentLanguage}
-        user={user}
-        onLogout={() => {
-          setUser(null)
-          localStorage.removeItem("user")
-          router.push("/")
-        }}
-      />
-
-      <main className="container" style={{ paddingTop: "2rem", paddingBottom: "2rem" }}>
-        <div className="card" style={{ maxWidth: "800px", margin: "0 auto" }}>
-          <h1 style={{ textAlign: "center", marginBottom: "2rem", color: "#2d5016" }}>
-            Add New Product to Marketplace
-          </h1>
-
-          {error && <div className="alert alert-error">{error}</div>}
-          {success && <div className="alert alert-success">{success}</div>}
-
-          <form onSubmit={handleSubmit}>
-            <div className="grid grid-2">
-              <div className="form-group">
-                <label htmlFor="name">Product Name *</label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Fresh Tomatoes, Organic Rice"
-                  required
-                />
+      <Header />
+      <div className="container mx-auto max-w-2xl py-10">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl">Add New Product</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="name">Product Name</Label>
+                <Input id="name" name="name" placeholder="e.g. Organic Tomatoes" required onChange={handleChange} />
               </div>
 
-              <div className="form-group">
-                <label htmlFor="category">Category *</label>
-                <select id="category" name="category" value={formData.category} onChange={handleInputChange} required>
-                  <option value="">Select category...</option>
-                  {categories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="description">Description *</label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                placeholder="Describe your product, quality, farming methods, etc."
-                rows={4}
-                required
-              />
-            </div>
-
-            <div className="grid grid-2">
-              <div className="form-group">
-                <label htmlFor="price">Price per Unit (₹) *</label>
-                <input
-                  type="number"
-                  id="price"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleInputChange}
-                  min="0"
-                  step="0.01"
-                  placeholder="e.g., 50.00"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="category">Category</Label>
+                  <Select onValueChange={handleCategoryChange} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Vegetables">Vegetables</SelectItem>
+                      <SelectItem value="Fruits">Fruits</SelectItem>
+                      <SelectItem value="Grains">Grains</SelectItem>
+                      <SelectItem value="Spices">Spices</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="unit">Unit</Label>
+                  <Select onValueChange={handleUnitChange} defaultValue="kg">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="kg">Kg</SelectItem>
+                      <SelectItem value="g">Gram</SelectItem>
+                      <SelectItem value="pc">Piece</SelectItem>
+                      <SelectItem value="bunch">Bunch</SelectItem>
+                      <SelectItem value="liter">Liter</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              <div className="form-group">
-                <label htmlFor="unit">Unit *</label>
-                <select id="unit" name="unit" value={formData.unit} onChange={handleInputChange} required>
-                  <option value="">Select unit...</option>
-                  {units.map((unit) => (
-                    <option key={unit} value={unit}>
-                      {unit}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-2">
-              <div className="form-group">
-                <label htmlFor="quantity">Available Quantity *</label>
-                <input
-                  type="number"
-                  id="quantity"
-                  name="quantity"
-                  value={formData.quantity}
-                  onChange={handleInputChange}
-                  min="1"
-                  placeholder="e.g., 100"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="price">Price (per unit)</Label>
+                  <Input id="price" name="price" type="number" min="0" step="0.01" placeholder="0.00" required onChange={handleChange} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="stock">Stock Quantity</Label>
+                  <Input id="stock" name="stock" type="number" min="0" placeholder="0" required onChange={handleChange} />
+                </div>
               </div>
 
-              <div className="form-group">
-                <label htmlFor="location">Location *</label>
-                <input
-                  type="text"
-                  id="location"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleInputChange}
-                  placeholder="City, State"
-                  required
-                />
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea id="description" name="description" placeholder="Describe your product..." required onChange={handleChange} />
               </div>
-            </div>
 
-            <div className="form-group">
-              <label htmlFor="harvestDate">Harvest Date</label>
-              <input
-                type="date"
-                id="harvestDate"
-                name="harvestDate"
-                value={formData.harvestDate}
-                onChange={handleInputChange}
-              />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="image">Product Image</Label>
+                <Input id="image" type="file" accept="image/*" required onChange={handleImageChange} />
+                {formData.image && (
+                  <img src={formData.image} alt="Preview" className="mt-2 h-32 w-32 object-cover rounded-md border" />
+                )}
+              </div>
 
-            <button type="submit" className="btn btn-primary" style={{ width: "100%" }} disabled={loading}>
-              {loading ? (
-                <>
-                  <div className="spinner" style={{ width: "20px", height: "20px", marginRight: "0.5rem" }}></div>
-                  Adding Product...
-                </>
-              ) : (
-                "Add Product to Marketplace"
-              )}
-            </button>
-          </form>
-
-          <div style={{ marginTop: "2rem", padding: "1rem", backgroundColor: "#f0f8f0", borderRadius: "5px" }}>
-            <h4>Tips for Better Sales:</h4>
-            <ul>
-              <li>Use clear, descriptive product names</li>
-              <li>Provide detailed descriptions including quality and farming methods</li>
-              <li>Set competitive prices based on market rates</li>
-              <li>Keep your inventory updated</li>
-              <li>Mention if products are organic or pesticide-free</li>
-              <li>Include harvest date for freshness indication</li>
-            </ul>
-          </div>
-        </div>
-      </main>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Adding Product...</> : "Add Product"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
-  )
+  );
 }

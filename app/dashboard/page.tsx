@@ -21,8 +21,21 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem("token")
+      const getCookieValue = (name: string) => {
+        const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
+        return match ? decodeURIComponent(match[2]) : null
+      }
+
+      let token = localStorage.getItem("token")
       const savedUser = localStorage.getItem("user")
+
+      if (!token) {
+        const cookieToken = getCookieValue("token")
+        if (cookieToken) {
+          token = cookieToken
+          localStorage.setItem("token", cookieToken)
+        }
+      }
 
       if (!token || !savedUser) {
         router.push("/login")

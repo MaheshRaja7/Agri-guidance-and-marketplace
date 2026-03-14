@@ -9,6 +9,7 @@ const en = {
   home: "Home",
   weather: "Weather",
   marketplace: "Marketplace",
+  cart: "Cart",
   chat: "AI Chat",
   diseaseDetection: "Disease Detection",
   login: "Login",

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
 import Header from "../../../../components/Header"
 import { useLanguage } from "@/contexts/LanguageContext"
+import { addToCart as addToCartHelper, getCartItems } from "@/lib/cart"
 
 interface Product {
   _id: string
@@ -20,6 +21,8 @@ interface Product {
     name: string
     city: string
     area?: number
+    rating?: number
+    numReviews?: number
   }
 }
 
@@ -29,8 +32,12 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
-  const [cart, setCart] = useState<{ [key: string]: number }>({})
+  const [cart, setCart] = useState<Record<string, number>>({})
   const [orderQuantity, setOrderQuantity] = useState(1)
+  const [reviewText, setReviewText] = useState("")
+  const [rating, setRating] = useState(5)
+  const [submittingReview, setSubmittingReview] = useState(false)
+  const [reviews, setReviews] = useState<any[]>([])
   const params = useParams()
 
   useEffect(() => {
@@ -39,15 +46,30 @@ export default function ProductDetailPage() {
       setUser(JSON.parse(savedUser))
     }
 
-    const savedCart = localStorage.getItem("cart")
-    if (savedCart) {
-      setCart(JSON.parse(savedCart))
-    }
+    setCart(
+      getCartItems().reduce((acc, item) => {
+        acc[item.productId] = item.quantity
+        return acc
+      }, {} as Record<string, number>)
+    )
 
     if (params.id) {
       fetchProduct(params.id as string)
+      fetchReviews(params.id as string)
     }
   }, [params.id])
+
+  const fetchReviews = async (productId: string) => {
+    try {
+      const response = await fetch(`/api/reviews?productId=${productId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setReviews(data)
+      }
+    } catch (error) {
+      console.error("Failed to load reviews:", error)
+    }
+  }
 
   const fetchProduct = async (productId: string) => {
     try {
@@ -67,10 +89,71 @@ export default function ProductDetailPage() {
   }
 
   const addToCart = (productId: string, quantity: number) => {
-    const newCart = { ...cart }
-    newCart[productId] = (newCart[productId] || 0) + quantity
-    setCart(newCart)
-    localStorage.setItem("cart", JSON.stringify(newCart))
+    if (!product) return;
+
+    addToCartHelper(
+      {
+        productId: product._id,
+        name: product.name,
+        price: product.price,
+        image: "",
+        farmerId: product.farmer,
+      },
+      quantity,
+    );
+
+    setCart((prev) => ({
+      ...prev,
+      [productId]: (prev[productId] || 0) + quantity,
+    }));
+  }
+
+  const submitReview = async () => {
+    if (!reviewText.trim()) return alert("Review cannot be empty");
+    
+    setSubmittingReview(true);
+    try {
+      // Create a mock review API call (or point to real one once verified)
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          farmerId: product?.farmer.id,
+          productId: product?._id,
+          rating,
+          review: reviewText,
+          userId: user?._id || user?.id
+        })
+      });
+      
+      if (response.ok) {
+        alert("Review submitted successfully!");
+        setReviewText("");
+        // Optimistically update
+        if (product && product.farmer) {
+          const numReviews = (product.farmer.numReviews || 0) + 1;
+          const currentRatingTotal = (product.farmer.rating || 0) * (product.farmer.numReviews || 0);
+          const newRating = (currentRatingTotal + rating) / numReviews;
+          setProduct({
+            ...product,
+            farmer: {
+              ...product.farmer,
+              rating: newRating,
+              numReviews
+            }
+          });
+        }
+        // Fetch new reviews list
+        fetchReviews(product!._id);
+      } else {
+        alert("Failed to submit review.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error submitting review.");
+    } finally {
+      setSubmittingReview(false);
+    }
   }
 
   const getCategoryIcon = (category: string) => {
@@ -233,32 +316,104 @@ export default function ProductDetailPage() {
             {product.farmer && (
               <div className="card" style={{ backgroundColor: "#f8f9fa" }}>
                 <h3>{t('farmer') || 'Farmer'} Information</h3>
-                <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                  <div
-                    style={{
-                      width: "60px",
-                      height: "60px",
-                      borderRadius: "50%",
-                      background: "#7cb342",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "white",
-                      fontSize: "1.5rem",
-                    }}
-                  >
-                    👨‍🌾
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                    <div
+                      style={{
+                        width: "60px",
+                        height: "60px",
+                        borderRadius: "50%",
+                        background: "#7cb342",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "white",
+                        fontSize: "1.5rem",
+                      }}
+                    >
+                      👨‍🌾
+                    </div>
+                    <div>
+                      <h4 style={{ margin: 0 }}>{product.farmer.name}</h4>
+                      <p style={{ margin: 0, color: "#666" }}>📍 {product.farmer.city}</p>
+                      {product.farmer.area && (
+                        <p style={{ margin: 0, color: "#666" }}>🚜 Farm Area: {product.farmer.area} cents</p>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    <h4 style={{ margin: 0 }}>{product.farmer.name}</h4>
-                    <p style={{ margin: 0, color: "#666" }}>📍 {product.farmer.city}</p>
-                    {product.farmer.area && (
-                      <p style={{ margin: 0, color: "#666" }}>🚜 Farm Area: {product.farmer.area} cents</p>
-                    )}
+                  <div style={{ textAlign: "right", background: "white", padding: "0.5rem 1rem", borderRadius: "10px", border: "1px solid #ddd" }}>
+                    <div style={{ fontSize: "1.5rem", fontWeight: "bold", color: "#f59e0b" }}>
+                      ⭐ {product.farmer.rating ? product.farmer.rating.toFixed(1) : "New"}
+                    </div>
+                    <div style={{ fontSize: "0.8rem", color: "#666" }}>
+                      {product.farmer.numReviews || 0} reviews
+                    </div>
                   </div>
                 </div>
+
+                {/* Optional Review Section */}
+                {user?.userType === "customer" && (
+                  <div style={{ marginTop: "1.5rem", paddingTop: "1.5rem", borderTop: "1px solid #ddd" }}>
+                    <h4 style={{ marginBottom: "0.5rem" }}>Rate this Farmer</h4>
+                    <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          onClick={() => setRating(star)}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            fontSize: "1.5rem",
+                            cursor: "pointer",
+                            color: star <= rating ? "#f59e0b" : "#ccc"
+                          }}
+                        >
+                          ★
+                        </button>
+                      ))}
+                    </div>
+                    <textarea 
+                      placeholder="Share your experience..."
+                      value={reviewText}
+                      onChange={(e) => setReviewText(e.target.value)}
+                      style={{ width: "100%", padding: "0.5rem", borderRadius: "5px", border: "1px solid #ddd", minHeight: "60px", marginBottom: "0.5rem", resize: "vertical" }}
+                    />
+                    <button 
+                      onClick={submitReview}
+                      disabled={submittingReview}
+                      className="btn btn-secondary"
+                      style={{ padding: "0.5rem 1rem", fontSize: "0.9rem" }}
+                    >
+                      {submittingReview ? "Submitting..." : "Submit Review"}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
+            
+            {/* Display Reviews */}
+            <div className="card" style={{ marginTop: "2rem" }}>
+              <h3 style={{ marginBottom: "1rem", color: "#2d5016" }}>Customer Reviews</h3>
+              {reviews.length === 0 ? (
+                <p style={{ color: "#666", fontStyle: "italic" }}>No reviews yet. Be the first to leave a review!</p>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                  {reviews.map((rev) => (
+                    <div key={rev._id} style={{ padding: "1rem", borderRadius: "8px", border: "1px solid #eee", backgroundColor: "#fafafa" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
+                        <strong style={{ color: "#333" }}>{rev.reviewerId?.name || "Customer"}</strong>
+                        <span style={{ color: "#f59e0b" }}>{"★".repeat(rev.rating)}{"☆".repeat(5 - rev.rating)}</span>
+                      </div>
+                      <p style={{ margin: 0, color: "#555", fontSize: "0.95rem" }}>{rev.comment}</p>
+                      <small style={{ color: "#aaa", fontSize: "0.8rem", marginTop: "0.5rem", display: "block" }}>
+                        {new Date(rev.createdAt).toLocaleDateString()}
+                      </small>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
           </div>
         </div>
 

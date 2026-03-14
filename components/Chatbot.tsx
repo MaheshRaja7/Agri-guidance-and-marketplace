@@ -15,14 +15,17 @@ interface ChatbotProps {
   isOpen: boolean
   onClose: () => void
   user?: any
+  initialLocation?: string
+  initialSoilType?: string
 }
 
-export default function Chatbot({ isOpen, onClose, user }: ChatbotProps) {
+export default function Chatbot({ isOpen, onClose, user, initialLocation, initialSoilType }: ChatbotProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [inputMessage, setInputMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const hasTriggeredRef = useRef(false)
 
   useEffect(() => {
     if (isOpen && messages.length === 0) {
@@ -38,8 +41,61 @@ export default function Chatbot({ isOpen, onClose, user }: ChatbotProps) {
           category: "greeting",
         },
       ])
+
+      // Auto-trigger crop recommendation if location is provided
+      if (initialLocation && !hasTriggeredRef.current) {
+        hasTriggeredRef.current = true;
+        const soilPart = initialSoilType ? ` with ${initialSoilType} soil` : "";
+        const autoMessage = `What crops can I grow in ${initialLocation}${soilPart}?`;
+        handleAutoSendMessage(autoMessage);
+      }
     }
-  }, [isOpen, messages.length])
+  }, [isOpen, messages.length, initialLocation, initialSoilType])
+
+  const handleAutoSendMessage = async (msg: string) => {
+    setIsLoading(true);
+    setIsTyping(true);
+
+    // Add hidden user message or visible? Visible is better context.
+    const newUserMessage: ChatMessage = {
+      id: Date.now().toString(),
+      message: msg,
+      response: "",
+      timestamp: new Date(),
+      isUser: true,
+    }
+    setMessages((prev) => [...prev, newUserMessage]);
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg, userId: user?.id || null, location: initialLocation }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setTimeout(() => {
+          const botMessage: ChatMessage = {
+            id: (Date.now() + 1).toString(),
+            message: "",
+            response: data.response,
+            timestamp: new Date(),
+            isUser: false,
+            category: data.category,
+          }
+          setMessages((prev) => [...prev, botMessage])
+          setIsTyping(false)
+        }, 1000)
+      }
+    } catch (error) {
+      console.error("Auto trigger error", error);
+      setIsTyping(false);
+      setIsLoading(false);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   useEffect(() => {
     scrollToBottom()
@@ -78,6 +134,7 @@ export default function Chatbot({ isOpen, onClose, user }: ChatbotProps) {
         body: JSON.stringify({
           message: userMessage,
           userId: user?.id || null,
+          location: initialLocation // Context for normal messages too
         }),
       })
 

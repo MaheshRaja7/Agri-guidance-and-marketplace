@@ -4,6 +4,10 @@ import type React from "react"
 
 import { useRouter } from "next/navigation"
 import Header from "../../components/Header"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function RegisterPage() {
   const [currentLanguage, setCurrentLanguage] = useState("en")
@@ -66,8 +70,15 @@ export default function RegisterPage() {
         setSuccess("Registration successful! Redirecting to dashboard...")
         localStorage.setItem("token", data.token)
         localStorage.setItem("user", JSON.stringify(data.user))
+        // Store token in a cookie so Next.js middleware and protected routes can access it
+        document.cookie = `token=${data.token}; path=/; max-age=${7 * 24 * 60 * 60}; sameSite=lax`
+
         setTimeout(() => {
-          router.push("/dashboard")
+          if (data.user.userType === "farmer") {
+            router.push("/farmer/dashboard")
+          } else {
+            router.push("/marketplace")
+          }
         }, 2000)
       } else {
         setError(data.error || "Registration failed")
@@ -80,107 +91,133 @@ export default function RegisterPage() {
   }
 
   return (
-    <div>
-      <Header currentLanguage={currentLanguage} onLanguageChange={setCurrentLanguage} />
+    <div className="min-h-screen bg-slate-50">
+      <Header />
 
-      <main className="container" style={{ paddingTop: "2rem", paddingBottom: "2rem" }}>
-        <div className="card" style={{ maxWidth: "600px", margin: "0 auto" }}>
-          <h1 style={{ textAlign: "center", marginBottom: "2rem", color: "#2d5016" }}>Register for AgriGuide</h1>
-
-          {error && <div className="alert alert-error">{error}</div>}
-          {success && <div className="alert alert-success">{success}</div>}
-
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="name">Full Name *</label>
-              <input type="text" id="name" name="name" value={formData.name} onChange={handleInputChange} required />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="email">Email Address *</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="phone">Phone Number *</label>
-              <input type="tel" id="phone" name="phone" value={formData.phone} onChange={handleInputChange} required />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="userType">I am a *</label>
-              <select id="userType" name="userType" value={formData.userType} onChange={handleInputChange} required>
-                <option value="customer">Customer (Buyer)</option>
-                <option value="farmer">Farmer (Seller)</option>
-              </select>
-            </div>
-
-            {formData.userType === "farmer" && (
-              <div className="form-group">
-                <label htmlFor="area">Farm Area (in cents) *</label>
-                <input
-                  type="number"
-                  id="area"
-                  name="area"
-                  value={formData.area}
-                  onChange={handleInputChange}
-                  min="1"
-                  required
-                />
+      <main className="container mx-auto flex min-h-[calc(100vh-70px)] items-center justify-center py-12">
+        <Card className="w-full max-w-2xl shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-center text-2xl font-semibold">Register for AgriGuide</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {error && (
+              <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
+                {success}
               </div>
             )}
 
-            <div className="form-group">
-              <label htmlFor="city">City *</label>
-              <input type="text" id="city" name="city" value={formData.city} onChange={handleInputChange} required />
-            </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-muted-foreground" htmlFor="name">
+                    Full Name
+                  </label>
+                  <Input id="name" name="name" value={formData.name} onChange={handleInputChange} required />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-muted-foreground" htmlFor="email">
+                    Email Address
+                  </label>
+                  <Input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} required />
+                </div>
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="password">Password *</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                minLength={6}
-                required
-              />
-            </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-muted-foreground" htmlFor="phone">
+                    Phone Number
+                  </label>
+                  <Input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleInputChange} required />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-muted-foreground" htmlFor="city">
+                    City
+                  </label>
+                  <Input id="city" name="city" value={formData.city} onChange={handleInputChange} required />
+                </div>
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password *</label>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleInputChange}
-                minLength={6}
-                required
-              />
-            </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-muted-foreground" htmlFor="userType">
+                  I am a
+                </label>
+                <Select value={formData.userType} onValueChange={(value) => setFormData((prev) => ({ ...prev, userType: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="customer">Customer (Buyer)</SelectItem>
+                    <SelectItem value="farmer">Farmer (Seller)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <button type="submit" className="btn btn-primary" style={{ width: "100%" }} disabled={loading}>
-              {loading ? <div className="spinner"></div> : "Register"}
-            </button>
-          </form>
+              {formData.userType === "farmer" && (
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-muted-foreground" htmlFor="area">
+                    Farm Area (in cents)
+                  </label>
+                  <Input
+                    id="area"
+                    name="area"
+                    type="number"
+                    value={formData.area}
+                    onChange={handleInputChange}
+                    min={1}
+                    required
+                  />
+                </div>
+              )}
 
-          <div style={{ textAlign: "center", marginTop: "2rem" }}>
-            <p>
-              Already have an account?{" "}
-              <a href="/login" style={{ color: "#7cb342", textDecoration: "none" }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-muted-foreground" htmlFor="password">
+                    Password
+                  </label>
+                  <Input
+                    id="password"
+                    name="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    minLength={6}
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-muted-foreground" htmlFor="confirmPassword">
+                    Confirm Password
+                  </label>
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    minLength={6}
+                    required
+                  />
+                </div>
+              </div>
+
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Registering..." : "Register"}
+              </Button>
+            </form>
+
+            <div className="text-center text-sm text-muted-foreground">
+              Already have an account?{' '}
+              <a href="/login" className="font-medium text-green-700 hover:text-green-900">
                 Login here
               </a>
-            </p>
-          </div>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
       </main>
     </div>
   )

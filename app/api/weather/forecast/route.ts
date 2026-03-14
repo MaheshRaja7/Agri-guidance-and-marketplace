@@ -5,7 +5,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const location = searchParams.get("location")
-    const days = Number(searchParams.get("days")) || 5
+    const days = Number(searchParams.get("days")) || 7
 
     if (!location) {
       return NextResponse.json({ error: "Location parameter is required" }, { status: 400 })

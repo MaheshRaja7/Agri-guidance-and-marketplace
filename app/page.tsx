@@ -3,6 +3,9 @@ import { useState, useEffect } from "react"
 import Header from "../components/Header"
 import Chatbot from "../components/Chatbot"
 import { useLanguage } from "@/contexts/LanguageContext"
+import Link from "next/link"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 
 export default function HomePage() {
   const [user, setUser] = useState(null)
@@ -17,7 +20,7 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div>
+    <div className="min-h-screen bg-slate-50">
       <Header
         user={user}
         onLogout={() => {
@@ -26,108 +29,84 @@ export default function HomePage() {
         }}
       />
 
-      <main>
-        {/* Hero Section */}
-        <section className="hero">
-          <div className="container">
-            <h1>{t("welcomeTitle")}</h1>
-            <p>{t("welcomeDescription")}</p>
-            <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
-              <a href="/marketplace" className="btn btn-primary">
-                {t("marketplace")}
-              </a>
-              <a href="/disease-detection" className="btn btn-secondary">
+      <main className="container mx-auto space-y-10 py-12">
+        <section className="rounded-2xl bg-white/80 p-10 shadow-lg backdrop-blur-md">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-green-800">{t("welcomeTitle")}</h1>
+            <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
+              {t("welcomeDescription")}
+            </p>
+          </div>
+
+          <div className="mt-10 flex flex-col gap-4 sm:flex-row items-center justify-center">
+            <Link href="/marketplace" className="w-full sm:w-auto">
+              <Button className="w-full">{t("marketplace")}</Button>
+            </Link>
+            <Link href="/disease-detection" className="w-full sm:w-auto">
+              <Button variant="secondary" className="w-full">
                 {t("diseaseDetection")}
-              </a>
-            </div>
+              </Button>
+            </Link>
           </div>
         </section>
 
-        {/* Features Grid */}
-        <section className="container">
-          <div className="grid grid-3">
-            <div className="card">
-              <h3>🌤️ {t("weatherTitle")}</h3>
-              <p>{t("weatherDesc")}</p>
-              <a href="/weather" className="btn btn-primary">
-                {t("weather")}
-              </a>
-            </div>
+        <section className="grid gap-6 md:grid-cols-3">
+          <Card>
+            <CardHeader>
+              <CardTitle>🌤️ {t("weatherTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">{t("weatherDesc")}</p>
+              <Link href="/weather">
+                <Button className="w-full">{t("weather")}</Button>
+              </Link>
+            </CardContent>
+          </Card>
 
-            <div className="card">
-              <h3>🛒 {t("marketplaceTitle")}</h3>
-              <p>{t("marketplaceDesc")}</p>
-              <a href="/marketplace" className="btn btn-primary">
-                {t("marketplace")}
-              </a>
-            </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>🛒 {t("marketplaceTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">{t("marketplaceDesc")}</p>
+              <Link href="/marketplace">
+                <Button className="w-full">{t("marketplace")}</Button>
+              </Link>
+            </CardContent>
+          </Card>
 
-            <div className="card">
-              <h3>🌱 Crop Guidance</h3>
-              <p>Get personalized crop recommendations based on your soil type, location, and weather conditions.</p>
-              <a href="/disease-detection" className="btn btn-primary">
-                Get Guidance
-              </a>
-            </div>
-
-            <div className="card">
-              <h3>🔬 {t("diseaseTitle")}</h3>
-              <p>{t("diseaseDesc")}</p>
-              <a href="/disease-detection" className="btn btn-primary">
-                {t("diseaseDetection")}
-              </a>
-            </div>
-
-            <div className="card">
-              <h3>🤖 {t("aiChatTitle")}</h3>
-              <p>{t("aiChatDesc")}</p>
-              <button className="btn btn-primary" onClick={() => setIsChatbotOpen(true)}>
+          <Card>
+            <CardHeader>
+              <CardTitle>🤖 {t("aiChatTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">{t("aiChatDesc")}</p>
+              <Button className="w-full" onClick={() => setIsChatbotOpen(true)}>
                 {t("chat")}
-              </button>
-            </div>
-
-            <div className="card">
-              <h3>📊 Analytics</h3>
-              <p>Track your farming progress, analyze yields, and optimize your agricultural practices.</p>
-              <a href="/dashboard" className="btn btn-primary">
-                {t("dashboard")}
-              </a>
-            </div>
-          </div>
+              </Button>
+            </CardContent>
+          </Card>
         </section>
 
-        {/* Statistics Section */}
-        <section className="container">
-          <div className="card" style={{ textAlign: "center" }}>
-            <h2>Empowering Farmers Across India</h2>
-            <div className="grid grid-3" style={{ marginTop: "2rem" }}>
-              <div>
-                <h3 style={{ color: "#7cb342", fontSize: "2.5rem" }}>10,000+</h3>
-                <p>Registered Farmers</p>
-              </div>
-              <div>
-                <h3 style={{ color: "#7cb342", fontSize: "2.5rem" }}>50,000+</h3>
-                <p>Products Listed</p>
-              </div>
-              <div>
-                <h3 style={{ color: "#7cb342", fontSize: "2.5rem" }}>1M+</h3>
-                <p>Successful Transactions</p>
-              </div>
+        <section className="rounded-2xl bg-white/80 p-10 shadow-lg">
+          <h2 className="text-2xl font-semibold text-green-800">Empowering Farmers Across India</h2>
+          <div className="mt-8 grid gap-6 md:grid-cols-3">
+            <div className="rounded-xl border border-muted/20 p-6 text-center">
+              <p className="text-4xl font-bold text-green-700">10,000+</p>
+              <p className="text-sm text-muted-foreground">Registered Farmers</p>
+            </div>
+            <div className="rounded-xl border border-muted/20 p-6 text-center">
+              <p className="text-4xl font-bold text-green-700">50,000+</p>
+              <p className="text-sm text-muted-foreground">Products Listed</p>
+            </div>
+            <div className="rounded-xl border border-muted/20 p-6 text-center">
+              <p className="text-4xl font-bold text-green-700">1M+</p>
+              <p className="text-sm text-muted-foreground">Successful Transactions</p>
             </div>
           </div>
         </section>
       </main>
 
-      {/* Chatbot Toggle Button */}
-      <button
-        className="chatbot-toggle"
-        onClick={() => setIsChatbotOpen(true)}
-        style={{ display: isChatbotOpen ? "none" : "block" }}
-      >
-        💬
-      </button>
-
-      {/* Chatbot Component */}
       <Chatbot isOpen={isChatbotOpen} onClose={() => setIsChatbotOpen(false)} user={user} />
     </div>
   )

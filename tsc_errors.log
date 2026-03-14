@@ -1,0 +1,69 @@
+agriculture web project/app/api/auth/login/route.ts(28,45): error TS2345: Argument of type 'WithId<Document>' is not assignable to parameter of type 'Partial<User>'.
+  Types of property '_id' are incompatible.
+    Type 'ObjectId' is not assignable to type 'string'.
+agriculture web project/app/api/auth/register/route.ts(39,45): error TS2345: Argument of type '{ _id: ObjectId; email: any; userType: any; }' is not assignable to parameter of type 'Partial<User>'.
+  Types of property '_id' are incompatible.
+    Type 'ObjectId' is not assignable to type 'string'.
+agriculture web project/app/api/payment/process/route.ts(17,9): error TS2322: Type 'string' is not assignable to type 'null'.
+agriculture web project/app/api/payment/process/route.ts(23,9): error TS2322: Type 'string' is not assignable to type 'null'.
+agriculture web project/app/disease-detection/page.tsx(100,39): error TS2339: Property 'id' does not exist on type 'never'.
+agriculture web project/app/disease-detection/page.tsx(190,9): error TS2322: Type '{ currentLanguage: string; onLanguageChange: Dispatch<SetStateAction<string>>; user: null; onLogout: () => void; }' is not assignable to type 'IntrinsicAttributes & HeaderProps'.
+  Property 'currentLanguage' does not exist on type 'IntrinsicAttributes & HeaderProps'.
+agriculture web project/app/farmer/add-product/page.tsx(109,27): error TS2339: Property 'city' does not exist on type 'never'.
+agriculture web project/app/farmer/add-product/page.tsx(128,17): error TS2322: Type '{ currentLanguage: string; onLanguageChange: Dispatch<SetStateAction<string>>; }' is not assignable to type 'IntrinsicAttributes & HeaderProps'.
+  Property 'currentLanguage' does not exist on type 'IntrinsicAttributes & HeaderProps'.
+agriculture web project/app/farmer/add-product/page.tsx(140,9): error TS2322: Type '{ currentLanguage: string; onLanguageChange: Dispatch<SetStateAction<string>>; user: never; onLogout: () => void; }' is not assignable to type 'IntrinsicAttributes & HeaderProps'.
+  Property 'currentLanguage' does not exist on type 'IntrinsicAttributes & HeaderProps'.
+agriculture web project/app/login/page.tsx(58,15): error TS2322: Type '{ currentLanguage: string; onLanguageChange: Dispatch<SetStateAction<string>>; }' is not assignable to type 'IntrinsicAttributes & HeaderProps'.
+  Property 'currentLanguage' does not exist on type 'IntrinsicAttributes & HeaderProps'.
+agriculture web project/app/marketplace/page.tsx(134,9): error TS2322: Type '{ currentLanguage: string; onLanguageChange: Dispatch<SetStateAction<string>>; user: null; onLogout: () => void; }' is not assignable to type 'IntrinsicAttributes & HeaderProps'.
+  Property 'currentLanguage' does not exist on type 'IntrinsicAttributes & HeaderProps'.
+agriculture web project/app/marketplace/page.tsx(160,22): error TS2339: Property 'userType' does not exist on type 'never'.
+agriculture web project/app/marketplace/page.tsx(268,20): error TS2339: Property 'userType' does not exist on type 'never'.
+agriculture web project/app/marketplace/page.tsx(335,47): error TS2339: Property 'userType' does not exist on type 'never'.
+agriculture web project/app/register/page.tsx(84,15): error TS2322: Type '{ currentLanguage: string; onLanguageChange: Dispatch<SetStateAction<string>>; }' is not assignable to type 'IntrinsicAttributes & HeaderProps'.
+  Property 'currentLanguage' does not exist on type 'IntrinsicAttributes & HeaderProps'.
+agriculture web project/components/Header.tsx(163,79): error TS2345: Argument of type '"open"' is not assignable to parameter of type '"close" | "error" | "farmer" | "customer" | "weather" | "email" | "password" | "userType" | "sort" | "price" | "quantity" | "paymentMethod" | "shippingAddress" | "search" | "temperature" | ... 81 more ... | "back"'.
+agriculture web project/lib/auth.ts(2,17): error TS7016: Could not find a declaration file for module 'jsonwebtoken'. 'C:/Users/smahe/Downloads/agriculture web project 2/node_modules/jsonwebtoken/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/jsonwebtoken` if it exists or add a new declaration (.d.ts) file containing `declare module 'jsonwebtoken';`
+agriculture web project/lib/database.ts(34,51): error TS2769: No overload matches this call.
+  Overload 1 of 6, '(filter: Filter<Document>): Promise<WithId<Document> | null>', gave the following error.
+    Type 'string' is not assignable to type 'Condition<ObjectId> | undefined'.
+  Overload 2 of 6, '(filter: Filter<Document>): Promise<Document | null>', gave the following error.
+    Type 'string' is not assignable to type 'Condition<ObjectId> | undefined'.
+  Overload 3 of 6, '(filter: Filter<Document>, options?: (Omit<FindOneOptions, "timeoutMode"> & Abortable) | undefined): Promise<Document | null>', gave the following error.
+    Type 'string' is not assignable to type 'Condition<ObjectId> | undefined'.
+agriculture web project/lib/database.ts(56,54): error TS2769: No overload matches this call.
+  Overload 1 of 6, '(filter: Filter<Document>): Promise<WithId<Document> | null>', gave the following error.
+    Type 'string' is not assignable to type 'Condition<ObjectId> | undefined'.
+  Overload 2 of 6, '(filter: Filter<Document>): Promise<Document | null>', gave the following error.
+    Type 'string' is not assignable to type 'Condition<ObjectId> | undefined'.
+  Overload 3 of 6, '(filter: Filter<Document>, options?: (Omit<FindOneOptions, "timeoutMode"> & Abortable) | undefined): Promise<Document | null>', gave the following error.
+    Type 'string' is not assignable to type 'Condition<ObjectId> | undefined'.
+agriculture web project/lib/database.ts(68,20): error TS2322: Type 'string' is not assignable to type 'Condition<ObjectId> | undefined'.
+agriculture web project/lib/database.ts(74,56): error TS2322: Type 'string' is not assignable to type 'Condition<ObjectId> | undefined'.
+agriculture web project/lib/database.ts(103,20): error TS2322: Type 'string' is not assignable to type 'Condition<ObjectId> | undefined'.
+app/api/payment/process/route.ts(17,9): error TS2322: Type 'string' is not assignable to type 'null'.
+app/api/payment/process/route.ts(23,9): error TS2322: Type 'string' is not assignable to type 'null'.
+app/disease-detection/page.tsx(175,9): error TS2322: Type '{ currentLanguage: string; onLanguageChange: Dispatch<SetStateAction<string>>; user: null; onLogout: () => void; }' is not assignable to type 'IntrinsicAttributes & HeaderProps'.
+  Property 'currentLanguage' does not exist on type 'IntrinsicAttributes & HeaderProps'.
+components/Header.tsx(210,79): error TS2345: Argument of type '"open"' is not assignable to parameter of type '"close" | "error" | "farmer" | "customer" | "weather" | "email" | "password" | "userType" | "sort" | "price" | "quantity" | "paymentMethod" | "shippingAddress" | "search" | "temperature" | ... 81 more ... | "back"'.
+lib/auth.ts(2,17): error TS7016: Could not find a declaration file for module 'jsonwebtoken'. 'C:/Users/smahe/Downloads/agriculture web project 2/node_modules/jsonwebtoken/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/jsonwebtoken` if it exists or add a new declaration (.d.ts) file containing `declare module 'jsonwebtoken';`
+lib/database.ts(34,51): error TS2769: No overload matches this call.
+  Overload 1 of 6, '(filter: Filter<Document>): Promise<WithId<Document> | null>', gave the following error.
+    Type 'string' is not assignable to type 'Condition<ObjectId> | undefined'.
+  Overload 2 of 6, '(filter: Filter<Document>): Promise<Document | null>', gave the following error.
+    Type 'string' is not assignable to type 'Condition<ObjectId> | undefined'.
+  Overload 3 of 6, '(filter: Filter<Document>, options?: (Omit<FindOneOptions, "timeoutMode"> & Abortable) | undefined): Promise<Document | null>', gave the following error.
+    Type 'string' is not assignable to type 'Condition<ObjectId> | undefined'.
+lib/database.ts(56,54): error TS2769: No overload matches this call.
+  Overload 1 of 6, '(filter: Filter<Document>): Promise<WithId<Document> | null>', gave the following error.
+    Type 'string' is not assignable to type 'Condition<ObjectId> | undefined'.
+  Overload 2 of 6, '(filter: Filter<Document>): Promise<Document | null>', gave the following error.
+    Type 'string' is not assignable to type 'Condition<ObjectId> | undefined'.
+  Overload 3 of 6, '(filter: Filter<Document>, options?: (Omit<FindOneOptions, "timeoutMode"> & Abortable) | undefined): Promise<Document | null>', gave the following error.
+    Type 'string' is not assignable to type 'Condition<ObjectId> | undefined'.
+lib/database.ts(68,20): error TS2322: Type 'string' is not assignable to type 'Condition<ObjectId> | undefined'.
+lib/database.ts(74,56): error TS2322: Type 'string' is not assignable to type 'Condition<ObjectId> | undefined'.
+lib/database.ts(103,20): error TS2322: Type 'string' is not assignable to type 'Condition<ObjectId> | undefined'.

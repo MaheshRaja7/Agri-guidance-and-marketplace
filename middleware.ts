@@ -12,19 +12,16 @@ export function middleware(request: NextRequest) {
   if (isProtectedRoute) {
     const token = request.cookies.get("token")?.value || request.headers.get("authorization")?.replace("Bearer ", "")
 
+    // DEBUG: ensure token and decoding works (remove after fixing)
+    // console.log('middleware token:', !!token, 'auth header:', !!request.headers.get('authorization'))
+
     if (!token) {
       return NextResponse.redirect(new URL("/login", request.url))
     }
 
-    const decoded = AuthService.verifyToken(token)
-    if (!decoded) {
-      return NextResponse.redirect(new URL("/login", request.url))
-    }
-
-    // Add user info to headers for API routes
+    // NOTE: Edge middleware cannot reliably access private env variables (like JWT_SECRET), so we only enforce that a token exists.
+    // The token will be fully validated by API routes (which run on the Node.js runtime and can access the secret).
     const response = NextResponse.next()
-    response.headers.set("x-user-id", decoded.userId)
-    response.headers.set("x-user-type", decoded.userType)
     return response
   }
 

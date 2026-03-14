@@ -2,11 +2,13 @@ import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import type { User } from "./mongodb"
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
+function getJwtSecret() {
+  return process.env.JWT_SECRET || "your-secret-key"
+}
 
 export function verifyToken(token: string): any {
   try {
-    return jwt.verify(token, JWT_SECRET)
+    return jwt.verify(token, getJwtSecret())
   } catch (error) {
     return null
   }
@@ -28,24 +30,41 @@ export class AuthService {
         email: user.email,
         userType: user.userType,
       },
-      JWT_SECRET,
+      getJwtSecret(),
       { expiresIn: "7d" },
     )
   }
 
   static verifyToken(token: string): any {
     try {
-      return jwt.verify(token, JWT_SECRET)
+      return jwt.verify(token, getJwtSecret())
     } catch (error) {
       return null
     }
   }
 
-  static extractTokenFromRequest(request: Request): string | null {
-    const authHeader = request.headers.get("authorization")
+  static extractTokenFromRequest(request: any): string | null {
+    // Prefer Authorization header (Bearer token)
+    const authHeader = request.headers?.get?.("authorization")
     if (authHeader && authHeader.startsWith("Bearer ")) {
       return authHeader.substring(7)
     }
+
+    // Next.js server-side: token cookie (set by login/register)
+    const cookieToken = request.cookies?.get?.("token")?.value
+    if (cookieToken) {
+      return cookieToken
+    }
+
+    // Fallback: parse token from cookie header string
+    const cookieHeader = request.headers?.get?.("cookie")
+    if (cookieHeader) {
+      const match = cookieHeader.match(/(?:^|;\s*)token=([^;]+)/)
+      if (match) {
+        return match[1]
+      }
+    }
+
     return null
   }
 }

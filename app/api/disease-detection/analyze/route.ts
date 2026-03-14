@@ -1,3 +1,4 @@
+
 import { type NextRequest, NextResponse } from "next/server"
 import { DiseaseDetectionService } from "../../../../lib/disease-detection"
 
@@ -22,13 +23,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Image file too large. Maximum size is 10MB" }, { status: 400 })
     }
 
-    // Analyze the image
+    // Call Internal Service (Mock) directly
+    // This avoids the need for a separate Python backend
     const result = await DiseaseDetectionService.analyzeImage(imageFile, cropType)
-
-    // In a real implementation, you would:
-    // 1. Upload the image to cloud storage
-    // 2. Save the detection result to database
-    // 3. Return the result with image URL
 
     return NextResponse.json({
       success: true,

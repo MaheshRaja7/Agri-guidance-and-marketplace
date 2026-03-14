@@ -1,15 +1,17 @@
 import clientPromise from "./mongodb"
 import type { User, Product, Order, ChatMessage, WeatherData, CropRecommendation } from "./mongodb"
+import { ObjectId } from "mongodb"
 
 export async function connectToDatabase() {
   const client = await clientPromise
-  return client.db("agriguide")
+  // Use the default database specified in the connection URI
+  return client.db()
 }
 
 export class DatabaseService {
   private static async getDb() {
     const client = await clientPromise
-    return client.db("agriguide")
+    return client.db()
   }
 
   // User operations
@@ -31,7 +33,7 @@ export class DatabaseService {
 
   static async getUserById(id: string) {
     const db = await this.getDb()
-    return await db.collection("users").findOne({ _id: id })
+    return await db.collection("users").findOne({ _id: new ObjectId(id) as any })
   }
 
   // Product operations
@@ -53,7 +55,7 @@ export class DatabaseService {
 
   static async getProductById(id: string) {
     const db = await this.getDb()
-    return await db.collection("products").findOne({ _id: id })
+    return await db.collection("products").findOne({ _id: new ObjectId(id) as any })
   }
 
   static async getProductsByFarmer(farmerId: string) {
@@ -65,13 +67,13 @@ export class DatabaseService {
     const db = await this.getDb()
     const result = await db
       .collection("products")
-      .updateOne({ _id: id }, { $set: { ...updateData, updatedAt: new Date() } })
+      .updateOne({ _id: new ObjectId(id) as any }, { $set: { ...updateData, updatedAt: new Date() } })
     return result
   }
 
   static async deleteProduct(id: string) {
     const db = await this.getDb()
-    return await db.collection("products").deleteOne({ _id: id })
+    return await db.collection("products").deleteOne({ _id: new ObjectId(id) as any })
   }
 
   // Order operations
@@ -100,7 +102,7 @@ export class DatabaseService {
     const db = await this.getDb()
     return await db
       .collection("orders")
-      .updateOne({ _id: orderId }, { $set: { orderStatus: status, updatedAt: new Date() } })
+      .updateOne({ _id: new ObjectId(orderId) as any }, { $set: { orderStatus: status, updatedAt: new Date() } })
   }
 
   // Chat operations

@@ -39,6 +39,8 @@ export async function GET(request: NextRequest) {
       description: "Partly cloudy",
       icon: "02d",
       condition: "partly-cloudy",
+      lat: 20.59,
+      lon: 78.96
     }
 
     return NextResponse.json(fallbackWeather)

@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react"
 import type React from "react"
 import Header from "../../components/Header"
-import type { DiseaseDetectionResult } from "../../lib/disease-detection"
+import { DiseaseDetectionService, type DiseaseDetectionResult } from "../../lib/disease-detection"
 
 export default function DiseaseDetectionPage() {
   const [currentLanguage, setCurrentLanguage] = useState("en")
@@ -94,25 +94,10 @@ export default function DiseaseDetectionPage() {
     setError("")
 
     try {
-      const formData = new FormData()
-      formData.append("image", selectedImage)
-      formData.append("cropType", cropType)
-      formData.append("userId", user?.id || "")
-
-      const response = await fetch("/api/disease-detection/analyze", {
-        method: "POST",
-        body: formData,
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        setAnalysisResult(data.result)
-      } else {
-        setError(data.error || "Analysis failed")
-      }
-    } catch (error) {
-      setError("Network error. Please try again.")
+      const result = await DiseaseDetectionService.analyzeImage(selectedImage, cropType)
+      setAnalysisResult(result)
+    } catch (error: any) {
+      setError(error.message || "Analysis failed. Please try again.")
     } finally {
       setIsAnalyzing(false)
     }
@@ -424,7 +409,7 @@ export default function DiseaseDetectionPage() {
                 <div style={{ marginTop: "2rem" }}>
                   <h3>Possible Diseases:</h3>
                   {symptomResults.map((result, index) => (
-                    <div key={result.id} className="card" style={{ marginBottom: "1rem" }}>
+                    <div key={index} className="card" style={{ marginBottom: "1rem" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1rem" }}>
                         <span style={{ fontSize: "1.5rem" }}>{getSeverityIcon(result.severity)}</span>
                         <div>

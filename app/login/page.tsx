@@ -4,6 +4,9 @@ import type React from "react"
 
 import { useRouter } from "next/navigation"
 import Header from "../../components/Header"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 
 export default function LoginPage() {
   const [currentLanguage, setCurrentLanguage] = useState("en")
@@ -42,7 +45,14 @@ export default function LoginPage() {
       if (response.ok) {
         localStorage.setItem("token", data.token)
         localStorage.setItem("user", JSON.stringify(data.user))
-        router.push("/dashboard")
+        // Store token in a cookie so Next.js middleware and protected routes can access it
+        document.cookie = `token=${data.token}; path=/; max-age=${7 * 24 * 60 * 60}; sameSite=lax`
+
+        if (data.user.userType === "farmer") {
+          router.push("/farmer/dashboard")
+        } else {
+          router.push("/marketplace")
+        }
       } else {
         setError(data.error || "Login failed")
       }
@@ -54,54 +64,63 @@ export default function LoginPage() {
   }
 
   return (
-    <div>
-      <Header currentLanguage={currentLanguage} onLanguageChange={setCurrentLanguage} />
+    <div className="min-h-screen bg-slate-50">
+      <Header />
 
-      <main className="container" style={{ paddingTop: "2rem", paddingBottom: "2rem" }}>
-        <div className="card" style={{ maxWidth: "400px", margin: "0 auto" }}>
-          <h1 style={{ textAlign: "center", marginBottom: "2rem", color: "#2d5016" }}>Login to AgriGuide</h1>
+      <main className="container mx-auto flex min-h-[calc(100vh-70px)] items-center justify-center py-12">
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-center text-2xl font-semibold">Login to AgriGuide</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {error && (
+              <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+              </div>
+            )}
 
-          {error && <div className="alert alert-error">{error}</div>}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-muted-foreground" htmlFor="email">
+                  Email Address
+                </label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
 
-          <form onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="email">Email Address</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-muted-foreground" htmlFor="password">
+                  Password
+                </label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
 
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Logging in..." : "Login"}
+              </Button>
+            </form>
 
-            <button type="submit" className="btn btn-primary" style={{ width: "100%" }} disabled={loading}>
-              {loading ? <div className="spinner"></div> : "Login"}
-            </button>
-          </form>
-
-          <div style={{ textAlign: "center", marginTop: "2rem" }}>
-            <p>
-              Don't have an account?{" "}
-              <a href="/register" style={{ color: "#7cb342", textDecoration: "none" }}>
+            <div className="text-center text-sm text-muted-foreground">
+              Don&apos;t have an account?{' '}
+              <a href="/register" className="font-medium text-green-700 hover:text-green-900">
                 Register here
               </a>
-            </p>
-          </div>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
       </main>
     </div>
   )

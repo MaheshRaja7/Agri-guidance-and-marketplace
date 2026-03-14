@@ -1,280 +1,187 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useLanguage } from "@/contexts/LanguageContext"
-
-interface CartItem {
-  productId: string
-  name: string
-  price: number
-  quantity: number
-  image: string
-  farmer: string
-}
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, CheckCircle } from "lucide-react";
+import Header from "@/components/Header";
 
 export default function CheckoutPage() {
-  const { t } = useLanguage()
-  const [cartItems, setCartItems] = useState<CartItem[]>([])
-  const [paymentMethod, setPaymentMethod] = useState("cod")
-  const [shippingAddress, setShippingAddress] = useState({
-    fullName: "",
-    phone: "",
-    address: "",
-    city: "",
-    state: "",
-    pincode: "",
-  })
-  const [paymentDetails, setPaymentDetails] = useState({
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-    upiId: "",
-  })
-  const [loading, setLoading] = useState(false)
-  const [user, setUser] = useState<any>(null)
-  const router = useRouter()
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [formData, setFormData] = useState({
+    shippingAddress: "",
+    contactPhone: "",
+    paymentMethod: "upi", // Default
+  });
 
   useEffect(() => {
-    // Load cart items from localStorage
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]")
-    setCartItems(cart)
-
-    // Check authentication
-    const token = localStorage.getItem("token")
-    if (!token) {
-      router.push("/login")
-      return
+    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    if (cart.length === 0) {
+      router.push("/cart");
+      return;
     }
+    const sum = cart.reduce((acc: number, item: any) => acc + item.price * item.quantity, 0);
+    setTotal(sum);
+  }, [router]);
 
-    // Verify token and get user info
-    fetch("/api/auth/verify", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.user) {
-          setUser(data.user)
-        } else {
-          router.push("/login")
-        }
-      })
-  }, [router])
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-  const totalAmount = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const handlePaymentMethodChange = (value: string) => {
+    setFormData({ ...formData, paymentMethod: value });
+  };
 
-  const handlePlaceOrder = async () => {
-    if (!shippingAddress.fullName || !shippingAddress.phone || !shippingAddress.address) {
-      alert("Please fill in all shipping details")
-      return
-    }
-
-    if (paymentMethod === "card" && (!paymentDetails.cardNumber || !paymentDetails.expiryDate || !paymentDetails.cvv)) {
-      alert("Please fill in all card details")
-      return
-    }
-
-    if (paymentMethod === "upi" && !paymentDetails.upiId) {
-      alert("Please enter UPI ID")
-      return
-    }
-
-    setLoading(true)
+  const handlePlaceOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
     try {
-      const token = localStorage.getItem("token")
-      const orderResponse = await fetch("/api/orders", {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Please login to place an order");
+        router.push("/login");
+        return;
+      }
+
+      const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+      const orderData = {
+        items: cart,
+        totalAmount: total,
+        shippingAddress: formData.shippingAddress,
+        contactPhone: formData.contactPhone,
+        paymentMethod: formData.paymentMethod,
+      };
+
+      // Simulate payment processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      const res = await fetch("/api/orders/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          items: cartItems,
-          totalAmount,
-          paymentMethod,
-          shippingAddress,
-          paymentDetails: paymentMethod !== "cod" ? paymentDetails : null,
-        }),
-      })
+        body: JSON.stringify(orderData),
+      });
 
-      const orderData = await orderResponse.json()
-
-      if (orderData.success) {
-        // Clear cart
-        localStorage.removeItem("cart")
-
-        // Redirect to order confirmation
-        router.push(`/order-confirmation?orderId=${orderData.orderId}&tracking=${orderData.trackingNumber}`)
+      if (res.ok) {
+        setSuccess(true);
+        localStorage.removeItem("cart"); // Clear cart
+        setTimeout(() => {
+          router.push("/customer/dashboard"); // Redirect to orders page
+        }, 3000);
       } else {
-        alert("Failed to place order. Please try again.")
+        const error = await res.json();
+        alert(error.error || "Failed to place order");
       }
     } catch (error) {
-      console.error("Order placement error:", error)
-      alert("Failed to place order. Please try again.")
+      console.error("Order error:", error);
+      alert("Something went wrong");
     } finally {
-      setLoading(false)
+      if (!success) setLoading(false);
     }
-  }
+  };
 
-  if (!user) {
-    return <div className="loading">{t('loading')}</div>
+  if (success) {
+    return (
+      <div>
+        <Header />
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
+          <CheckCircle className="h-20 w-20 text-green-500 mb-6" />
+          <h1 className="text-3xl font-bold mb-2">Order Placed Successfully!</h1>
+          <p className="text-muted-foreground mb-6">Redirecting you to your dashboard...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="checkout-container">
-      <div className="checkout-header">
-        <h1>{t('checkout')}</h1>
-        <p>{t('orderSummary')}</p>
-      </div>
+    <div>
+      <Header />
+      <div className="container mx-auto p-6 max-w-2xl py-10">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl">Checkout</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePlaceOrder} className="space-y-6">
 
-      <div className="checkout-content">
-        <div className="checkout-left">
-          {/* Order Summary */}
-          <div className="order-summary">
-            <h2>{t('orderSummary')}</h2>
-            {cartItems.map((item, index) => (
-              <div key={index} className="order-item">
-                <img src={item.image || "/placeholder.svg"} alt={item.name} />
-                <div className="item-details">
-                  <h3>{item.name}</h3>
-                  <p>By {item.farmer}</p>
-                  <p>Quantity: {item.quantity}</p>
-                </div>
-                <div className="item-price">₹{(item.price * item.quantity).toFixed(2)}</div>
+              <div className="bg-slate-50 p-4 rounded-lg flex justify-between items-center">
+                <span className="font-semibold">Total Amount</span>
+                <span className="text-2xl font-bold text-green-700">₹{total}</span>
               </div>
-            ))}
-            <div className="total-amount">
-              <h3>{t('total')}: ₹{totalAmount.toFixed(2)}</h3>
-            </div>
-          </div>
 
-          {/* Shipping Address */}
-          <div className="shipping-section">
-            <h2>{t('shippingAddress')}</h2>
-            <div className="form-grid">
-              <input
-                type="text"
-                placeholder="Full Name"
-                value={shippingAddress.fullName}
-                onChange={(e) => setShippingAddress({ ...shippingAddress, fullName: e.target.value })}
-              />
-              <input
-                type="tel"
-                placeholder="Phone Number"
-                value={shippingAddress.phone}
-                onChange={(e) => setShippingAddress({ ...shippingAddress, phone: e.target.value })}
-              />
-              <textarea
-                placeholder="Address"
-                value={shippingAddress.address}
-                onChange={(e) => setShippingAddress({ ...shippingAddress, address: e.target.value })}
-              />
-              <input
-                type="text"
-                placeholder="City"
-                value={shippingAddress.city}
-                onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
-              />
-              <input
-                type="text"
-                placeholder="State"
-                value={shippingAddress.state}
-                onChange={(e) => setShippingAddress({ ...shippingAddress, state: e.target.value })}
-              />
-              <input
-                type="text"
-                placeholder="PIN Code"
-                value={shippingAddress.pincode}
-                onChange={(e) => setShippingAddress({ ...shippingAddress, pincode: e.target.value })}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="checkout-right">
-          {/* Payment Method */}
-          <div className="payment-section">
-            <h2>{t('paymentMethod')}</h2>
-
-            <div className="payment-options">
-              <label className="payment-option">
-                <input
-                  type="radio"
-                  name="payment"
-                  value="cod"
-                  checked={paymentMethod === "cod"}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                />
-                <span>{t('cashOnDelivery')}</span>
-              </label>
-
-              <label className="payment-option">
-                <input
-                  type="radio"
-                  name="payment"
-                  value="card"
-                  checked={paymentMethod === "card"}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                />
-                <span>{t('creditCard')}</span>
-              </label>
-
-              <label className="payment-option">
-                <input
-                  type="radio"
-                  name="payment"
-                  value="upi"
-                  checked={paymentMethod === "upi"}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                />
-                <span>{t('upiPayment')}</span>
-              </label>
-            </div>
-
-            {/* Payment Details */}
-            {paymentMethod === "card" && (
-              <div className="payment-details">
-                <input
-                  type="text"
-                  placeholder="Card Number"
-                  value={paymentDetails.cardNumber}
-                  onChange={(e) => setPaymentDetails({ ...paymentDetails, cardNumber: e.target.value })}
-                />
-                <div className="card-row">
-                  <input
-                    type="text"
-                    placeholder="MM/YY"
-                    value={paymentDetails.expiryDate}
-                    onChange={(e) => setPaymentDetails({ ...paymentDetails, expiryDate: e.target.value })}
-                  />
-                  <input
-                    type="text"
-                    placeholder="CVV"
-                    value={paymentDetails.cvv}
-                    onChange={(e) => setPaymentDetails({ ...paymentDetails, cvv: e.target.value })}
-                  />
-                </div>
-              </div>
-            )}
-
-            {paymentMethod === "upi" && (
-              <div className="payment-details">
-                <input
-                  type="text"
-                  placeholder="UPI ID (e.g., user@paytm)"
-                  value={paymentDetails.upiId}
-                  onChange={(e) => setPaymentDetails({ ...paymentDetails, upiId: e.target.value })}
+              <div className="space-y-2">
+                <Label htmlFor="shippingAddress">Shipping Address</Label>
+                <Input
+                  id="shippingAddress"
+                  name="shippingAddress"
+                  placeholder="Full address (House No, Street, City, Pincode)"
+                  required
+                  onChange={handleChange}
                 />
               </div>
-            )}
-          </div>
 
-          <button className="place-order-btn" onClick={handlePlaceOrder} disabled={loading || cartItems.length === 0}>
-            {loading ? t('loading') : `${t('placeOrder')} - ₹${totalAmount.toFixed(2)}`}
-          </button>
-        </div>
+              <div className="space-y-2">
+                <Label htmlFor="contactPhone">Contact Phone</Label>
+                <Input
+                  id="contactPhone"
+                  name="contactPhone"
+                  placeholder="Mobile number for delivery coordination"
+                  required
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Payment Method</Label>
+                <RadioGroup defaultValue="upi" onValueChange={handlePaymentMethodChange} className="grid grid-cols-3 gap-4">
+                  <div>
+                    <RadioGroupItem value="upi" id="upi" className="peer sr-only" />
+                    <Label
+                      htmlFor="upi"
+                      className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                    >
+                      <span className="font-bold">UPI</span>
+                    </Label>
+                  </div>
+                  <div>
+                    <RadioGroupItem value="card" id="card" className="peer sr-only" />
+                    <Label
+                      htmlFor="card"
+                      className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                    >
+                      <span className="font-bold">Card</span>
+                    </Label>
+                  </div>
+                  <div>
+                    <RadioGroupItem value="cod" id="cod" className="peer sr-only" />
+                    <Label
+                      htmlFor="cod"
+                      className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                    >
+                      <span className="font-bold">COD</span>
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <Button type="submit" className="w-full size-lg text-lg" disabled={loading}>
+                {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Processing Payment...</> : `Pay ₹${total}`}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
-  )
+  );
 }

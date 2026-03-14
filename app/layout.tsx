@@ -1,7 +1,8 @@
 import type React from "react"
 import type { Metadata } from "next"
 import "./globals.css"
-import { LanguageProvider } from "@/contexts/LanguageContext"
+import "@/styles/google-translate.css"
+import { ClientLanguageProvider } from "@/components/ClientLanguageProvider"
 
 export const metadata: Metadata = {
   title: "AgriGuide - Agricultural Marketplace & Guidance Platform",
@@ -25,7 +26,7 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <LanguageProvider>{children}</LanguageProvider>
+        <ClientLanguageProvider>{children}</ClientLanguageProvider>
       </body>
     </html>
   )

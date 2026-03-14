@@ -1,0 +1,13 @@
+<svg width="120" height="40" viewBox="0 0 360 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3BB54A"/>
+      <stop offset="100%" stop-color="#2A923A"/>
+    </linearGradient>
+  </defs>
+  <rect width="360" height="120" rx="20" fill="url(#grad)"/>
+  <path d="M60 40c14 0 26 12 26 26s-12 26-26 26-26-12-26-26 12-26 26-26z" fill="#FFFFFF" opacity="0.9"/>
+  <path d="M60 42c12 0 22 10 22 22s-10 22-22 22-22-10-22-22 10-22 22-22z" fill="#3BB54A"/>
+  <path d="M60 38c-11 0-20 9-20 20s9 20 20 20 20-9 20-20-9-20-20-20zm0 6c7 0 14 7 14 14s-7 14-14 14-14-7-14-14 7-14 14-14z" fill="#FFFFFF" opacity="0.8"/>
+  <text x="110" y="75" font-family="Inter, Arial, sans-serif" font-size="54" font-weight="700" fill="#FFFFFF">AgriGuide</text>
+</svg>

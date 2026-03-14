@@ -14,17 +14,15 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     const farmer = await DatabaseService.getUserById(product.farmerId)
 
     return NextResponse.json({
-      product: {
-        ...product,
-        farmer: farmer
-          ? {
-              id: farmer._id,
-              name: farmer.name,
-              city: farmer.city,
-              area: farmer.area,
-            }
-          : null,
-      },
+      ...product.toObject ? product.toObject() : product,
+      farmerId: farmer
+        ? {
+            _id: farmer._id,
+            name: farmer.name,
+            city: farmer.city,
+            rating: farmer.rating,
+          }
+        : null,
     })
   } catch (error) {
     console.error("Product fetch error:", error)

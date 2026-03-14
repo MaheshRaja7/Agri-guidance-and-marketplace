@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const db = await connectToDatabase()
 
     // Simulate payment processing
-    let paymentResult = { success: false, transactionId: null }
+    let paymentResult: { success: boolean; transactionId: string | null } = { success: false, transactionId: null }
 
     if (paymentMethod === "card") {
       // Simulate card payment processing
