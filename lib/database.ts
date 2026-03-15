@@ -1,10 +1,18 @@
 import clientPromise from "./mongodb"
-import type { User, Product, Order, ChatMessage, WeatherData, CropRecommendation } from "./mongodb"
+import type {
+  User,
+  Product,
+  Order,
+  ChatMessage,
+  WeatherData,
+  CropRecommendation,
+} from "./mongodb"
+
 import { ObjectId } from "mongodb"
 
+// Connect to database
 export async function connectToDatabase() {
   const client = await clientPromise
-  // Use the default database specified in the connection URI
   return client.db()
 }
 
@@ -14,16 +22,20 @@ export class DatabaseService {
     return client.db()
   }
 
-  // User operations
+  // ======================
+  // USER OPERATIONS
+  // ======================
+
   static async createUser(userData: Omit<User, "_id" | "createdAt" | "updatedAt">) {
     const db = await this.getDb()
+
     const user = {
       ...userData,
       createdAt: new Date(),
       updatedAt: new Date(),
     }
-    const result = await db.collection("users").insertOne(user)
-    return result
+
+    return await db.collection("users").insertOne(user)
   }
 
   static async getUserByEmail(email: string) {
@@ -33,19 +45,28 @@ export class DatabaseService {
 
   static async getUserById(id: string) {
     const db = await this.getDb()
-    return await db.collection("users").findOne({ _id: new ObjectId(id) as any })
+
+    if (!ObjectId.isValid(id)) return null
+
+    return await db.collection("users").findOne({
+      _id: new ObjectId(id),
+    })
   }
 
-  // Product operations
+  // ======================
+  // PRODUCT OPERATIONS
+  // ======================
+
   static async createProduct(productData: Omit<Product, "_id" | "createdAt" | "updatedAt">) {
     const db = await this.getDb()
+
     const product = {
       ...productData,
       createdAt: new Date(),
       updatedAt: new Date(),
     }
-    const result = await db.collection("products").insertOne(product)
-    return result
+
+    return await db.collection("products").insertOne(product)
   }
 
   static async getProducts(filters: any = {}) {
@@ -55,7 +76,12 @@ export class DatabaseService {
 
   static async getProductById(id: string) {
     const db = await this.getDb()
-    return await db.collection("products").findOne({ _id: new ObjectId(id) as any })
+
+    if (!ObjectId.isValid(id)) return null
+
+    return await db.collection("products").findOne({
+      _id: new ObjectId(id),
+    })
   }
 
   static async getProductsByFarmer(farmerId: string) {
@@ -65,27 +91,44 @@ export class DatabaseService {
 
   static async updateProduct(id: string, updateData: Partial<Product>) {
     const db = await this.getDb()
-    const result = await db
-      .collection("products")
-      .updateOne({ _id: new ObjectId(id) as any }, { $set: { ...updateData, updatedAt: new Date() } })
-    return result
+
+    if (!ObjectId.isValid(id)) return null
+
+    return await db.collection("products").updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          ...updateData,
+          updatedAt: new Date(),
+        },
+      }
+    )
   }
 
   static async deleteProduct(id: string) {
     const db = await this.getDb()
-    return await db.collection("products").deleteOne({ _id: new ObjectId(id) as any })
+
+    if (!ObjectId.isValid(id)) return null
+
+    return await db.collection("products").deleteOne({
+      _id: new ObjectId(id),
+    })
   }
 
-  // Order operations
+  // ======================
+  // ORDER OPERATIONS
+  // ======================
+
   static async createOrder(orderData: Omit<Order, "_id" | "createdAt" | "updatedAt">) {
     const db = await this.getDb()
+
     const order = {
       ...orderData,
       createdAt: new Date(),
       updatedAt: new Date(),
     }
-    const result = await db.collection("orders").insertOne(order)
-    return result
+
+    return await db.collection("orders").insertOne(order)
   }
 
   static async getOrdersByCustomer(customerId: string) {
@@ -100,47 +143,79 @@ export class DatabaseService {
 
   static async updateOrderStatus(orderId: string, status: string) {
     const db = await this.getDb()
-    return await db
-      .collection("orders")
-      .updateOne({ _id: new ObjectId(orderId) as any }, { $set: { orderStatus: status, updatedAt: new Date() } })
+
+    if (!ObjectId.isValid(orderId)) return null
+
+    return await db.collection("orders").updateOne(
+      { _id: new ObjectId(orderId) },
+      {
+        $set: {
+          orderStatus: status,
+          updatedAt: new Date(),
+        },
+      }
+    )
   }
 
-  // Chat operations
+  // ======================
+  // CHAT OPERATIONS
+  // ======================
+
   static async saveChatMessage(messageData: Omit<ChatMessage, "_id" | "createdAt">) {
     const db = await this.getDb()
+
     const message = {
       ...messageData,
       createdAt: new Date(),
     }
-    const result = await db.collection("chat_messages").insertOne(message)
-    return result
+
+    return await db.collection("chat_messages").insertOne(message)
   }
 
   static async getChatHistory(userId: string) {
     const db = await this.getDb()
-    return await db.collection("chat_messages").find({ userId }).sort({ createdAt: -1 }).limit(50).toArray()
+
+    return await db
+      .collection("chat_messages")
+      .find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .toArray()
   }
 
-  // Weather operations
+  // ======================
+  // WEATHER DATA
+  // ======================
+
   static async saveWeatherData(weatherData: Omit<WeatherData, "_id">) {
     const db = await this.getDb()
-    const result = await db.collection("weather_data").insertOne(weatherData)
-    return result
+    return await db.collection("weather_data").insertOne(weatherData)
   }
 
-  // Crop recommendation operations
-  static async saveCropRecommendation(recommendationData: Omit<CropRecommendation, "_id" | "createdAt">) {
+  // ======================
+  // CROP RECOMMENDATION
+  // ======================
+
+  static async saveCropRecommendation(
+    recommendationData: Omit<CropRecommendation, "_id" | "createdAt">
+  ) {
     const db = await this.getDb()
+
     const recommendation = {
       ...recommendationData,
       createdAt: new Date(),
     }
-    const result = await db.collection("crop_recommendations").insertOne(recommendation)
-    return result
+
+    return await db.collection("crop_recommendations").insertOne(recommendation)
   }
 
   static async getCropRecommendations(userId: string) {
     const db = await this.getDb()
-    return await db.collection("crop_recommendations").find({ userId }).sort({ createdAt: -1 }).toArray()
+
+    return await db
+      .collection("crop_recommendations")
+      .find({ userId })
+      .sort({ createdAt: -1 })
+      .toArray()
   }
 }
