@@ -2,11 +2,8 @@ import { type NextRequest, NextResponse } from "next/server"
 import { AuthService } from "../../../../lib/auth"
 import { DatabaseService } from "../../../../lib/database"
 
-export const dynamic = "force-dynamic";
-<<<<<<< HEAD
-export const runtime = "nodejs";
-=======
->>>>>>> 2bfe35e (fix api dynamic build issue)
+export const dynamic = "force-dynamic"
+export const runtime = "nodejs"
 
 export async function GET(request: NextRequest) {
   try {
