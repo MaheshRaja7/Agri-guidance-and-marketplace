@@ -39,12 +39,92 @@ export default function FarmerDashboard() {
     const [recentOrders, setRecentOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const [analyticsMode, setAnalyticsMode] = useState<'7days' | 'daily' | 'monthly' | 'yearly'>('7days');
+    const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
+    const [selectedMonth, setSelectedMonth] = useState(() => new Date().toISOString().slice(0, 7));
+    const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear().toString());
+
     const formattedTotalProducts = stats?.totalProducts?.toLocaleString() ?? "0";
     const formattedTotalOrders = stats?.totalOrders?.toLocaleString() ?? "0";
     const formattedRevenue = stats?.revenue != null ? stats.revenue.toLocaleString() : "0";
 
     const salesData = useMemo(() => {
         const totals: Record<string, number> = {};
+
+        if (analyticsMode === 'daily') {
+            const selected = selectedDate;
+            recentOrders.forEach((order) => {
+                const dateValue = order.orderDate ? new Date(order.orderDate) : null;
+                const date = dateValue && !isNaN(dateValue.getTime())
+                    ? dateValue.toISOString().split('T')[0]
+                    : null;
+                if (date !== selected) return;
+
+                const orderTotal = (order.orderItems ?? []).reduce(
+                    (sum, item) => sum + (Number(item.price) * Number(item.quantity)),
+                    0
+                );
+                totals[selected] = (totals[selected] || 0) + orderTotal;
+            });
+
+            return [{ date: selected, sales: totals[selected] || 0 }];
+        }
+
+        if (analyticsMode === 'monthly') {
+            const [year, month] = selectedMonth.split('-');
+            recentOrders.forEach((order) => {
+                const dateValue = order.orderDate ? new Date(order.orderDate) : null;
+                if (!dateValue || isNaN(dateValue.getTime())) return;
+                const orderYear = dateValue.getFullYear().toString();
+                const orderMonth = String(dateValue.getMonth() + 1).padStart(2, '0');
+                if (`${orderYear}-${orderMonth}` !== `${year}-${month}`) return;
+
+                const date = dateValue.toISOString().split('T')[0];
+                const orderTotal = (order.orderItems ?? []).reduce(
+                    (sum, item) => sum + (Number(item.price) * Number(item.quantity)),
+                    0
+                );
+                totals[date] = (totals[date] || 0) + orderTotal;
+            });
+
+            return Object.entries(totals)
+                .map(([date, sales]) => ({ date, sales }))
+                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        }
+
+        if (analyticsMode === 'yearly') {
+            const year = selectedYear;
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+            recentOrders.forEach((order) => {
+                const dateValue = order.orderDate ? new Date(order.orderDate) : null;
+                if (!dateValue || isNaN(dateValue.getTime())) return;
+                const orderYear = dateValue.getFullYear().toString();
+                if (orderYear !== year) return;
+
+                const monthIndex = dateValue.getMonth();
+                const monthKey = `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
+                const orderTotal = (order.orderItems ?? []).reduce(
+                    (sum, item) => sum + (Number(item.price) * Number(item.quantity)),
+                    0
+                );
+                totals[monthKey] = (totals[monthKey] || 0) + orderTotal;
+            });
+
+            return Object.entries(totals)
+                .map(([monthKey, sales]) => {
+                    const [, month] = monthKey.split('-');
+                    const monthIndex = Number(month) - 1;
+                    return { date: monthNames[monthIndex] ?? monthKey, sales };
+                })
+                .sort((a, b) => {
+                    const aIndex = new Date(`${year}-${a.date}-01`).getMonth();
+                    const bIndex = new Date(`${year}-${b.date}-01`).getMonth();
+                    return aIndex - bIndex;
+                });
+        }
+
+        // Default: last 7 days
         recentOrders.forEach((order) => {
             const dateValue = order.orderDate ? new Date(order.orderDate) : null;
             const date = dateValue && !isNaN(dateValue.getTime())
@@ -66,7 +146,7 @@ export default function FarmerDashboard() {
                 return aTime - bTime;
             })
             .slice(-7);
-    }, [recentOrders]);
+    }, [recentOrders, analyticsMode, selectedDate, selectedMonth, selectedYear]);
 
     // Function to fetch data
     const fetchData = async () => {
@@ -257,6 +337,61 @@ export default function FarmerDashboard() {
                         <CardTitle>Sales Analytics (Last 7 days)</CardTitle>
                     </CardHeader>
                     <CardContent>
+                        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                            <div className="flex items-center gap-2">
+                                <label className="text-sm font-medium">View:</label>
+                                <Select value={analyticsMode} onValueChange={(value) => setAnalyticsMode(value as any)}>
+                                    <SelectTrigger className="h-8 w-40">
+                                        <SelectValue placeholder="Select" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="7days">Last 7 days</SelectItem>
+                                        <SelectItem value="daily">Daily</SelectItem>
+                                        <SelectItem value="monthly">Monthly</SelectItem>
+                                        <SelectItem value="yearly">Yearly</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {analyticsMode === 'daily' && (
+                                <div className="flex items-center gap-2">
+                                    <label className="text-sm font-medium">Date:</label>
+                                    <input
+                                        type="date"
+                                        className="rounded-md border p-2 text-sm"
+                                        value={selectedDate}
+                                        onChange={(e) => setSelectedDate(e.target.value)}
+                                    />
+                                </div>
+                            )}
+
+                            {analyticsMode === 'monthly' && (
+                                <div className="flex items-center gap-2">
+                                    <label className="text-sm font-medium">Month:</label>
+                                    <input
+                                        type="month"
+                                        className="rounded-md border p-2 text-sm"
+                                        value={selectedMonth}
+                                        onChange={(e) => setSelectedMonth(e.target.value)}
+                                    />
+                                </div>
+                            )}
+
+                            {analyticsMode === 'yearly' && (
+                                <div className="flex items-center gap-2">
+                                    <label className="text-sm font-medium">Year:</label>
+                                    <input
+                                        type="number"
+                                        className="w-24 rounded-md border p-2 text-sm"
+                                        value={selectedYear}
+                                        onChange={(e) => setSelectedYear(e.target.value)}
+                                        min="2000"
+                                        max="2099"
+                                    />
+                                </div>
+                            )}
+                        </div>
+
                         {salesData.length === 0 ? (
                             <div className="text-center py-6 text-muted-foreground">No sales data to display yet.</div>
                         ) : (
@@ -343,9 +478,20 @@ export default function FarmerDashboard() {
                                                     <td className="p-4 align-middle">₹{item.price * item.quantity}</td>
                                                     <td className="p-4 align-middle">{order.paymentMethod}</td>
                                                     <td className="p-4 align-middle">
-                                                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${order.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                                            {order.paymentStatus || 'pending'}
-                                                        </span>
+                                                        <Select
+                                                            value={order.paymentStatus || 'pending'}
+                                                            onValueChange={(value) => updatePaymentStatus(order._id, value)}
+                                                            className="w-40"
+                                                        >
+                                                            <SelectTrigger className="h-8">
+                                                                <SelectValue placeholder={order.paymentStatus || 'pending'} />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectItem value="pending">Pending</SelectItem>
+                                                                <SelectItem value="paid">Paid</SelectItem>
+                                                                <SelectItem value="refunded">Refunded</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
                                                     </td>
                                                     <td className="p-4 align-middle">
                                                         <Select

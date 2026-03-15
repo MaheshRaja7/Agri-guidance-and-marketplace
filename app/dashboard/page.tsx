@@ -140,7 +140,7 @@ export default function DashboardPage() {
             <div className="card">
               <h3>Sales Analytics</h3>
               <p>Track your sales performance and earnings.</p>
-              <a href="/farmer/analytics" className="btn btn-secondary">
+              <a href="/farmer/dashboard" className="btn btn-secondary">
                 View Analytics
               </a>
             </div>

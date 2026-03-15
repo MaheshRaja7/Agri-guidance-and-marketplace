@@ -1,12 +1,13 @@
 /* components/Header.module.css */
 
 .header {
-  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background: rgba(76, 175, 80, 0.72);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.12);
   position: sticky;
   top: 0;
   z-index: 1000;
-  border-bottom: 3px solid #388e3c;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .container {
@@ -21,17 +22,34 @@
   justify-content: space-between;
   min-height: 70px;
   position: relative;
+  gap: 1rem;
 }
 
 .logo {
-  font-size: 1.8rem;
+  flex: 0 0 auto;
+  max-width: 240px;
+  font-size: 1.25rem;
   font-weight: bold;
   color: white;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navLinks {
+  flex: 1 1 0;
+  justify-content: flex-end;
+}
+
+.logoText {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.75px;
 }
 
 .navLinks {

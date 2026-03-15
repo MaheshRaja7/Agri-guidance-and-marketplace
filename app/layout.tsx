@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import "./globals.css"
 import "@/styles/google-translate.css"
 import { ClientLanguageProvider } from "@/components/ClientLanguageProvider"
+import Background from "@/components/Background"
 
 export const metadata: Metadata = {
   title: "AgriGuide - Agricultural Marketplace & Guidance Platform",
@@ -26,6 +27,7 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <Background />
         <ClientLanguageProvider>{children}</ClientLanguageProvider>
       </body>
     </html>

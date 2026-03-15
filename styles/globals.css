@@ -119,10 +119,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-image: url('/images/agriculture-bg.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+    /* Background set dynamically per route by Background component */
   }
 }

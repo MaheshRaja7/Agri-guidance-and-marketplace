@@ -51,7 +51,8 @@ export default function LoginPage() {
         if (data.user.userType === "farmer") {
           router.push("/farmer/dashboard")
         } else {
-          router.push("/marketplace")
+          // After a customer login, redirect directly to the cart page
+          router.push("/cart")
         }
       } else {
         setError(data.error || "Login failed")
@@ -64,7 +65,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-transparent">
       <Header />
 
       <main className="container mx-auto flex min-h-[calc(100vh-70px)] items-center justify-center py-12">

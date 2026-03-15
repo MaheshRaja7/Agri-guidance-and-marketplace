@@ -82,12 +82,14 @@ export default function Header({ user: propUser, onLogout }: HeaderProps) {
         <nav className={styles.nav}>
           <div className={styles.logo} onClick={() => router.push("/")} style={{ cursor: 'pointer' }}>
             <Image
-              src="/images/logo.svg"
+              src="/background-images/logo.jpg"
               alt="AgriGuide logo"
-              width={160}
-              height={40}
+              width={110}
+              height={34}
               priority
+              style={{ opacity: 0.85 }}
             />
+            <span className={styles.logoText}>AgriGuide</span>
           </div>
 
           <ul className={`${styles.navLinks} ${isMenuOpen ? styles.mobileOpen : ''}`}>
@@ -122,7 +124,7 @@ export default function Header({ user: propUser, onLogout }: HeaderProps) {
             <li>
               <Link href="/chat" className={styles.navLink}>{t('chat')}</Link>
             </li>
-            {(!user || user.userType !== 'farmer') && (
+            {user?.userType === 'customer' && (
               <li>
                 <Link href="/cart" className={styles.navLink}>
                   <ShoppingCart className="inline-block mr-1" />

@@ -24,17 +24,25 @@ export default function CartPage() {
     const [total, setTotal] = useState(0);
 
     useEffect(() => {
-        const storedUser = typeof window !== "undefined" ? localStorage.getItem("user") : null;
-        if (storedUser) {
-            try {
-                const parsedUser = JSON.parse(storedUser);
-                if (parsedUser?.userType === "farmer") {
-                    router.push("/farmer/dashboard");
-                    return;
-                }
-            } catch (error) {
-                console.error("Failed to parse stored user", error);
-            }
+        const storedUserJson = typeof window !== "undefined" ? localStorage.getItem("user") : null;
+
+        if (!storedUserJson) {
+            // Redirect users who are not logged in
+            router.push("/login");
+            return;
+        }
+
+        let parsedUser: { userType?: string } | null = null;
+        try {
+            parsedUser = JSON.parse(storedUserJson);
+        } catch (error) {
+            console.error("Failed to parse stored user", error);
+        }
+
+        if (!parsedUser || parsedUser.userType !== "customer") {
+            // Redirect farmers (or malformed users) away from the customer cart page
+            router.push(parsedUser?.userType === "farmer" ? "/farmer/dashboard" : "/login");
+            return;
         }
 
         const storedCart = getCartItems();

@@ -35,9 +35,18 @@ export default function MarketplacePage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const districts = Array.from(
+    new Set(
+      products
+        .map(p => p.farmerId?.city || (p as any).location || "")
+        .filter(Boolean)
+    )
+  ).sort((a, b) => a.localeCompare(b));
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [priceFilter, setPriceFilter] = useState("All");
+  const [districtFilter, setDistrictFilter] = useState("All");
 
   const [user, setUser] = useState<any>(null);
   const currentUserId = user?.id || user?._id;
@@ -101,8 +110,15 @@ export default function MarketplacePage() {
       });
     }
 
+    if (districtFilter !== "All") {
+      result = result.filter(p => {
+        const district = p.farmerId?.city || (p as any).location || "";
+        return district.toLowerCase() === districtFilter.toLowerCase();
+      });
+    }
+
     setFilteredProducts(result);
-  }, [searchTerm, categoryFilter, priceFilter, products]);
+  }, [searchTerm, categoryFilter, priceFilter, districtFilter, products]);
 
   const addToCartHandler = (product: Product) => {
     addToCart({
@@ -438,6 +454,23 @@ export default function MarketplacePage() {
               </SelectContent>
             </Select>
           </div>
+
+          <div className="w-full md:w-48">
+            <Select value={districtFilter} onValueChange={setDistrictFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="District" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All Districts</SelectItem>
+                {districts.map((district) => (
+                  <SelectItem key={district} value={district}>
+                    {district}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="w-full md:w-48">
             <Select value={priceFilter} onValueChange={setPriceFilter}>
               <SelectTrigger>
