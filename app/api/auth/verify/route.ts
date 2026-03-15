@@ -3,7 +3,10 @@ import { AuthService } from "../../../../lib/auth"
 import { DatabaseService } from "../../../../lib/database"
 
 export const dynamic = "force-dynamic";
+<<<<<<< HEAD
 export const runtime = "nodejs";
+=======
+>>>>>>> 2bfe35e (fix api dynamic build issue)
 
 export async function GET(request: NextRequest) {
   try {
