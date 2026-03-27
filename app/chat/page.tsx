@@ -2,41 +2,32 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Header from "../../components/Header"
-import Chatbot from "../../components/Chatbot"
-
-import { useSearchParams } from "next/navigation"
-import { Suspense } from 'react'
+import AgriChatbot from "../../components/Chatbot"
+import { Suspense } from "react"
 
 export default function ChatPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", background: "#0a1a0a", color: "#7cb342" }}>
+      <div className="agri-chat-spinner" />
+    </div>}>
       <ChatContent />
     </Suspense>
   )
 }
 
 function ChatContent() {
-  const [currentLanguage, setCurrentLanguage] = useState("en")
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState<any>(null)
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const location = searchParams.get('location') ? decodeURIComponent(searchParams.get('location')!) : undefined
-  const soilType = searchParams.get('soilType') ? decodeURIComponent(searchParams.get('soilType')!) : undefined
 
   useEffect(() => {
     const savedUser = localStorage.getItem("user")
     if (savedUser) {
       setUser(JSON.parse(savedUser))
     }
-
-    const savedLanguage = localStorage.getItem("preferred-language")
-    if (savedLanguage) {
-      setCurrentLanguage(savedLanguage)
-    }
   }, [])
 
   return (
-    <div>
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
       <Header
         user={user}
         onLogout={() => {
@@ -45,58 +36,9 @@ function ChatContent() {
           router.push("/")
         }}
       />
-
-      <main className="container" style={{ paddingTop: "2rem", paddingBottom: "2rem" }}>
-        <div className="card">
-          <h1 style={{ textAlign: "center", marginBottom: "2rem", color: "#2d5016" }}>
-            Chat with AgriBot - Your AI Agricultural Assistant
-          </h1>
-
-          <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-            <p>Get instant answers to your farming questions from our AI-powered agricultural expert.</p>
-            <p>
-              <strong>Ask about:</strong> Crop cultivation, Disease identification, Soil management, Irrigation, Pest
-              control, Weather advice, and more!
-            </p>
-          </div>
-
-          <div
-            style={{
-              position: "relative",
-              height: "600px",
-              border: "2px solid #7cb342",
-              borderRadius: "15px",
-              overflow: "hidden",
-            }}
-          >
-            <Chatbot isOpen={true} onClose={() => { }} user={user} initialLocation={location} initialSoilType={soilType} />
-          </div>
-        </div>
-
-        <div className="grid grid-3" style={{ marginTop: "2rem" }}>
-          <div className="card">
-            <h3>🌱 Crop Guidance</h3>
-            <p>Ask about specific crops, planting seasons, care instructions, and harvesting tips.</p>
-            <small>
-              <strong>Example:</strong> "How do I grow tomatoes in summer?"
-            </small>
-          </div>
-          <div className="card">
-            <h3>🦠 Disease Diagnosis</h3>
-            <p>Describe symptoms and get advice on plant diseases and treatment options.</p>
-            <small>
-              <strong>Example:</strong> "My wheat plants have brown spots on leaves"
-            </small>
-          </div>
-          <div className="card">
-            <h3>🌍 Soil & Fertilizer</h3>
-            <p>Get recommendations for soil improvement and fertilizer application.</p>
-            <small>
-              <strong>Example:</strong> "What fertilizer is best for rice cultivation?"
-            </small>
-          </div>
-        </div>
-      </main>
+      <div style={{ flex: 1, overflow: "hidden" }}>
+        <AgriChatbot isOpen={true} onClose={() => router.push("/")} user={user} />
+      </div>
     </div>
   )
 }

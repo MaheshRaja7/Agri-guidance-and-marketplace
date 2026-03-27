@@ -1,148 +1,160 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { DatabaseService } from "../../../lib/database"
-import { AgriculturalAI } from "../../../lib/ai-chatbot"
-import { AdvisoryService } from "../../../lib/advisory-service"
-import { WeatherService } from "../../../lib/weather"
+import { type NextRequest, NextResponse } from "next/server";
+import { chatWithGemini, analyzeImageWithGemini, type GeminiMessage } from "../../../lib/gemini";
+import { WeatherService } from "../../../lib/weather";
+import dbConnect from "../../../lib/mongoose";
+import ChatSession from "../../../models/ChatSession";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { message, userId, location } = body // Expect location to be passed from frontend if available
+    const body = await request.json();
+    const { message, sessionId, imageBase64, mimeType, userId } = body;
 
-    if (!message || !message.trim()) {
-      return NextResponse.json({ error: "Message is required" }, { status: 400 })
+    if (!message?.trim() && !imageBase64) {
+      return NextResponse.json(
+        { error: "Message or image is required" },
+        { status: 400 }
+      );
     }
 
-    const lowerMessage = message.toLowerCase();
-    let response = "";
-    let category = "general";
+    await dbConnect();
 
-    // 1. Pest Control Strategy (Real-time climate based)
-    if (lowerMessage.includes("pest") || lowerMessage.includes("insect") || lowerMessage.includes("disease")) {
-      category = "pest_control";
+    // Get or create session
+    let session;
+    if (sessionId) {
+      session = await ChatSession.findOne({ sessionId });
+    }
+
+    if (!session) {
+      const newSessionId =
+        sessionId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      session = new ChatSession({
+        sessionId: newSessionId,
+        userId: userId || "anonymous",
+        title: message?.trim().slice(0, 50) || "Image Analysis",
+        messages: [],
+      });
+    }
+
+    // Build history for Gemini context (last 20 messages max)
+    const history: GeminiMessage[] = session.messages
+      .slice(-20)
+      .map((msg: any) => ({
+        role: msg.role as "user" | "model",
+        parts: [{ text: msg.content }],
+      }));
+
+    // Detect if message needs weather context
+    const lowerMessage = (message || "").toLowerCase();
+    const needsWeather =
+      lowerMessage.includes("weather") ||
+      lowerMessage.includes("crop") ||
+      lowerMessage.includes("recommend") ||
+      lowerMessage.includes("grow") ||
+      lowerMessage.includes("plant") ||
+      lowerMessage.includes("season") ||
+      lowerMessage.includes("rain") ||
+      lowerMessage.includes("temperature") ||
+      lowerMessage.includes("humidity") ||
+      lowerMessage.includes("irrigation") ||
+      lowerMessage.includes("water");
+
+    let weatherContext = "";
+    if (needsWeather) {
       try {
-        // Fetch real-time weather (default to Mumbai if no location)
-        const searchLocation = location || "Mumbai";
-        const weather = await WeatherService.getCurrentWeather(searchLocation);
+        const locationPatterns = [
+          /in\s+([A-Z][a-zA-Z\s]+)/,
+          /at\s+([A-Z][a-zA-Z\s]+)/,
+          /for\s+([A-Z][a-zA-Z\s]+)/,
+          /near\s+([A-Z][a-zA-Z\s]+)/,
+        ];
+        let location = "Mumbai";
+        for (const pattern of locationPatterns) {
+          const match = message?.match(pattern);
+          if (match) {
+            location = match[1].trim();
+            break;
+          }
+        }
 
-        const advice = AdvisoryService.getPestControlAdvice({
-          humidity: weather.humidity,
-          temperature: weather.temperature,
-          description: weather.description
-        });
-        response = `Based on current weather in ${searchLocation} (Temp: ${weather.temperature}°C, Humidity: ${weather.humidity}%), here is your pest control strategy: ${advice}`;
-
+        const weather = await WeatherService.getCurrentWeather(location);
+        weatherContext = `Location: ${weather.location}, Temperature: ${weather.temperature}°C, Humidity: ${weather.humidity}%, Wind: ${weather.windSpeed} km/h, Conditions: ${weather.description}`;
       } catch (e) {
-        console.error("Error fetching weather for pest advice:", e);
-        // Fallback with mock data
-        const advice = AdvisoryService.getPestControlAdvice({ humidity: 60, temperature: 25, description: "Clear" });
-        response = `(Could not fetch live weather) Here is a general pest control strategy: ${advice}`;
+        console.error("Weather fetch failed:", e);
       }
     }
-    // 2. Crop Recommendation (Dataset based)
-    else if (lowerMessage.includes("recommend") || lowerMessage.includes("suggest") || lowerMessage.includes("what crop") || lowerMessage.includes("grow")) {
-      category = "crop_recommendation";
-      // In a real app, we'd ask for these values. For now, we use a "Standard Fertile Soil" profile + Real Weather
+
+    let response: string;
+
+    if (imageBase64 && mimeType) {
       try {
-        const searchLocation = location || "Mumbai";
-        let weather = { temperature: 25, humidity: 60, rainfall: 150 }; // Defaults
+        const imageAnalysis = await analyzeImageWithGemini(imageBase64, mimeType);
 
-        try {
-          const current = await WeatherService.getCurrentWeather(searchLocation);
-          weather = {
-            temperature: current.temperature,
-            humidity: current.humidity,
-            rainfall: 150 // Annual rainfall estimate or current condition proxy
-          };
-        } catch (weatherError) {
-          console.log("Weather fetch failed, using defaults");
+        if (message?.trim()) {
+          response = await chatWithGemini(
+            `The user sent this message along with an image: "${message}"\n\nHere is the image analysis result:\n${imageAnalysis}\n\nPlease provide a comprehensive response addressing the user's question and incorporating the image analysis.`,
+            history,
+            undefined,
+            undefined,
+            weatherContext || undefined
+          );
+        } else {
+          response = imageAnalysis;
         }
-
-        // Check if message contains soil type keywords
-        let soilProfile = AdvisoryService.getSoilProfile("loamy"); // Default
-
-        const soilTypes = ["black", "red", "clay", "sandy", "alluvial", "laterite", "loamy"];
-        const foundSoil = soilTypes.find(t => lowerMessage.includes(t));
-
-        if (foundSoil) {
-          soilProfile = AdvisoryService.getSoilProfile(foundSoil);
-        }
-
-        const soilInput = {
-          ...soilProfile,
-          ...weather
-        };
-
-        const recommendations = AdvisoryService.recommendCrop(soilInput);
-        const soilMsg = foundSoil ? `**${foundSoil} soil**` : "standard soil profile (Loamy)";
-
-        response = `Based on your local weather (${weather.temperature}°C) and ${soilMsg}, I recommend growing: **${recommendations.join(", ")}**. \n\n(Tip: You can specify your soil type like 'Black soil' or 'Red soil' for better accuracy).`;
-      } catch (e) {
-        console.error("Error in crop recommendation:", e);
-        response = AgriculturalAI.generateResponse(message, "crop_recommendation");
+      } catch (error) {
+        console.error("Image analysis error:", error);
+        response =
+          "I couldn't analyze the image. Please try uploading a clearer image of the plant/crop.";
+      }
+    } else {
+      try {
+        response = await chatWithGemini(
+          message,
+          history,
+          undefined,
+          undefined,
+          weatherContext || undefined
+        );
+      } catch (error: any) {
+        console.error("Chat error (fallback):", error?.message || error);
+        response =
+          "⏳ AI is currently busy. Please wait 15-30 seconds and try again. Free Gemini API has limited requests per minute.";
       }
     }
-    // 3. Irrigation Schedule (Dataset based)
-    else if (lowerMessage.includes("water") || lowerMessage.includes("irrigation")) {
-      category = "irrigation";
-      // Extract crop name
-      const crops = ["wheat", "rice", "maize", "sugarcane", "cotton", "soybean", "barley", "potato", "groundnuts", "coffee", "pulse"];
-      const foundCrop = crops.find(c => lowerMessage.includes(c));
 
-      if (foundCrop) {
-        try {
-          // Mock current conditions
-          const conditions = {
-            CropType: foundCrop,
-            CropDays: 30, // Default to mid-stage
-            SoilMoisture: 300, // Default dry-ish
-            temperature: 28,
-            Humidity: 50
-          };
+    // Save messages to session
+    session.messages.push({
+      role: "user",
+      content: message || "[Image uploaded]",
+      imageUrl: imageBase64 ? "image_attached" : undefined,
+      timestamp: new Date(),
+    });
 
-          const needsWater = AdvisoryService.predictIrrigation(conditions);
-          const advice = needsWater ? "Yes, you should irrigate now." : "No, irrigation is not needed at this moment.";
-          response = `For **${foundCrop}** (Day 30), based on typical moisture requirements: ${advice} \n\n(Data analysis from irrigation records)`;
-        } catch (e) {
-          console.error("Error in irrigation prediction:", e);
-          response = AgriculturalAI.generateResponse(message, "irrigation");
-        }
-      } else {
-        response = "Which crop are you asking about? (e.g., Wheat, Rice, Sugarcane...)";
-      }
-    }
-    // 4. General Fallback
-    else {
-      // Check if the query is agriculture-related
-      if (!AgriculturalAI.isAgriculturalQuery(message)) {
-        return NextResponse.json({
-          response:
-            "I'm AgriBot, specialized in agricultural guidance. Please ask me questions related to farming, crops, plant diseases, soil management, irrigation, or other agricultural topics. How can I help you with your farming needs?",
-          category: "general",
-        })
-      }
-      category = AgriculturalAI.categorizeQuery(message);
-      response = AgriculturalAI.generateResponse(message, category);
+    session.messages.push({
+      role: "model",
+      content: response,
+      timestamp: new Date(),
+    });
+
+    if (session.messages.length <= 2) {
+      session.title = (message || "Image Analysis").slice(0, 60);
     }
 
-    // Save chat message to database if userId is provided
-    if (userId) {
-      await DatabaseService.saveChatMessage({
-        userId,
-        message: message.trim(),
-        response,
-        category: category as any,
-      })
-    }
+    await session.save();
 
     return NextResponse.json({
       response,
-      category,
+      sessionId: session.sessionId,
       timestamp: new Date().toISOString(),
-    })
-  } catch (error) {
-    console.error("Chat API error:", error)
-    return NextResponse.json({ error: "Failed to process chat message" }, { status: 500 })
+    });
+  } catch (error: any) {
+    console.error("Chat API error:", error);
+    // Always return valid JSON with 200 — the frontend should display the message
+    return NextResponse.json({
+      response:
+        "⚠️ Something went wrong. Please try again in a moment.",
+      error: error.message || "Failed to process chat message",
+      sessionId: null,
+      timestamp: new Date().toISOString(),
+    });
   }
 }
-
