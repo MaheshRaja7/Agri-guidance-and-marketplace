@@ -1,4 +1,4 @@
-<img width="1874" height="905" alt="image" src="https://github.com/user-attachments/assets/3b0fe670-ba0e-47d8-bdd1-3dc46f419367" />AI Agri Guidance and Online Marketplace
+
 🌱 Overview
 An AI-powered platform for farmers providing chatbot assistance, crop disease detection, weather insights, and an online marketplace.
 
