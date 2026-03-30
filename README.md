@@ -27,6 +27,9 @@ Backend: Vercel
 📹 Demo
 https://youtu.be/uaF-A_VGsJs?si=D7hnCun4z0fdj6e3
 
+Images
+<img width="1889" height="911" alt="image" src="https://github.com/user-attachments/assets/76c46f19-42b4-46ef-bdf9-0919b210c97f" />
+
 📌 Track
 
 AI & Robotics
