@@ -92,8 +92,6 @@ A full-stack real-time agriculture platform built using **MERN Stack + Next.js +
 ### 🔑 Login Form
 ![Login](https://raw.githubusercontent.com/user-attachments/assets/3a05bb0b-b2b5-4f33-88a0-7ea9b6e4213a)
 
----
-
 ## 📌 Track
 AI & Robotics  
 
