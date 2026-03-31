@@ -1,28 +1,180 @@
 
-🌱 Overview
-An AI-powered platform for farmers providing chatbot assistance, crop disease detection, weather insights, and an online marketplace.
+🌾 AI Agri Guidance & Online Marketplace
+(PL Genesis Hackathon – AI & Robotics | Existing Code)
 
-🚀 Features
-AI Chatbot (Gemini API)
-Plant Disease Detection (ML model)
-Weather-based crop suggestions
-Farmer marketplace system
-Multi-language support
+🚀 Project Overview
 
-🛠️ Tech Stack
-Frontend: Next.js, React
-Backend: Node.js API routes
-AI: Google Gemini API
-ML: Python Flask (TensorFlow)
-Database: MongoDB
+Your project is a full-stack real-time agriculture platform built using MERN Stack + Next.js + MongoDB + Machine Learning, designed to help farmers with:
+
+🌦️ Real-time weather insights
+🌱 Crop recommendations
+🧠 AI chatbot assistance
+🦠 Plant disease detection
+🛒 Online marketplace
+
+This project fits perfectly under the AI & Robotics track because it uses:
+
+AI (chatbot + ML disease detection)
+Data-driven decision systems
+Smart agriculture automation
+🏗️ Tech Stack (Hackathon Highlight)
+Frontend
+Next.js (App Router)
+React.js
+Tailwind CSS
+Backend
+Node.js + Express.js
+API Routes (Next.js)
+Database
+MongoDB (Mongoose)
+AI / ML
+Python Flask server (TensorFlow / Keras model)
+Gemini API (chatbot)
+APIs
+Windy API (weather)
+Google Translate (multi-language)
+
+🔥 Architecture Flow
+
+Frontend (Next.js)
+        ↓
+API Routes (Next.js / Express)
+        ↓
+MongoDB Database
+        ↓
+ML Flask Server (Disease Detection)
+        ↓
+External APIs (Windy + Gemini + Translate)
+
+
+📱 Feature Breakdown (Page-wise)
+
+🏠 1. Home Page
+Project overview
+Feature highlights
+Navigation buttons
+Language selector (Google Translate)
+🌦️ 2. Weather Page (Smart Farming Core)
+
+Features:
+
+Real-time weather using Windy API
+7-day forecast
+Location search
+Soil + crop input
+💧 Irrigation Logic
+Uses:
+Weather data
+Soil type
+Crop type
+Suggests:
+When to irrigate
+Water quantity
+🤖 AI Integration
+Sends weather + soil + crop data → chatbot
+Returns:
+Crop recommendation
+Daily tips
+
+🛒 3. Marketplace Page
+👨‍🌾 Farmer Features:
+Add product (image + details)
+Edit / Delete products
+Set price
+🧑‍💻 Customer Features:
+View products
+Filter:
+Category
+Price
+Location
+Add to cart
+Checkout (dummy payment)
+
+📊 4. Farmer Dashboard
+Sales analytics (charts)
+Daily
+Monthly
+Yearly
+Profit tracking
+Order status update
+Payment status update
+
+👤 5. Customer Dashboard
+Order history
+Product tracking
+Payment status
+
+🦠 6. Disease Detection Page
+Flow:
+
+Upload plant image
+Send to Flask ML server
+Model predicts disease
+Output:
+Disease name
+Causes
+Prevention
+Treatment
+Model:
+CNN / Deep Learning (TensorFlow/Keras)
+
+🤖 7. AI Chatbot (Major Hackathon Feature)
+
+Features:
+
+Chat history
+New chat
+Image upload
+Voice input
+File upload
+Powered by:
+Gemini API
+Capabilities:
+Crop suggestions
+Weather-based advice
+Disease guidance
+Farming Q&A
+
+🔐 8. Authentication System
+Register:
+Name
+Email
+Phone
+City/District
+Role:
+Farmer → add farm area
+Customer
+Login:
+Email + Password
+Role-based access
+
+🌐 9. Multi-language Support
+Google Translate integration
+Supports Indian languages:
+Tamil
+Hindi
+Telugu
+etc.
+
+🧠 AI & Robotics Track Justification
+
+Your project includes:
+
+✔ AI Chatbot (Gemini)
+✔ Machine Learning Model (Disease Detection)
+✔ Smart Irrigation System
+✔ Data-driven Agriculture Decisions
+
+👉 This matches:
+
+Autonomous AI systems
+Real-world problem solving
+Farmer assistance using AI
 
 ▶️ Run Locally
 npm install
 npm run dev
 
-📦 Deployment
-Frontend: Vercel
-Backend: Vercel
 
 📹 Demo
 https://youtu.be/uaF-A_VGsJs?si=D7hnCun4z0fdj6e3
