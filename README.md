@@ -42,55 +42,56 @@ A full-stack real-time agriculture platform built using **MERN Stack + Next.js +
 ## 📸 Screenshots
 
 ### 🏠 Home Page
-![Home](https://raw.githubusercontent.com/user-attachments/assets/76c46f19-42b4-46ef-bdf9-0919b210c97f)
 
----
+
+<img width="1895" height="909" alt="home" src="https://github.com/user-attachments/assets/d56e3381-e7ca-40a8-aedb-7ae103d2a180" />
+
 
 ### 🛒 Marketplace Page
-![Marketplace1](https://raw.githubusercontent.com/user-attachments/assets/66a8cea1-4925-4840-930d-06fff43376bb)
-
-![Marketplace2](https://raw.githubusercontent.com/user-attachments/assets/24a72366-5446-40aa-a29b-8e64b9ed5cf8)
-
-![Marketplace3](https://raw.githubusercontent.com/user-attachments/assets/a80e8260-f956-4c6e-a1d3-260ea1629377)
+<img width="1893" height="896" alt="markeplace" src="https://github.com/user-attachments/assets/b2d04e63-a758-423d-a83b-f3bc52c5bc32" />
+<img width="1874" height="905" alt="marketplace2" src="https://github.com/user-attachments/assets/abc9ea89-71a6-4713-aafe-95b32bb5d157" />
+<img width="1898" height="857" alt="markeplace3" src="https://github.com/user-attachments/assets/d88f1b94-08f6-4140-ae41-5580a37e2c49" />
 
 ---
 
 ### 📊 Farmer Dashboard
-![Farmer1](https://raw.githubusercontent.com/user-attachments/assets/ea0e8112-4727-4ec5-8015-30fb8a3027c1)
+<img width="1878" height="727" alt="farmer_dashboard1" src="https://github.com/user-attachments/assets/541f14a1-637e-478c-9229-e60bb7f97542" />
+<img width="1537" height="517" alt="farmer_dashboard2" src="https://github.com/user-attachments/assets/b2ba333a-a598-4d50-868f-5d81cb4f0abb" />
 
-![Farmer2](https://raw.githubusercontent.com/user-attachments/assets/17ce5530-2c4a-4a8c-98d0-35180f3d3d08)
 
 ---
 
 ### 👤 Customer Dashboard
-![Customer](https://raw.githubusercontent.com/user-attachments/assets/d8371849-0345-43e1-aff6-711b7f1d5cd1)
+<img width="1864" height="906" alt="customer dashboard" src="https://github.com/user-attachments/assets/f4cd4a7a-091d-4aab-abf7-96765a653ee3" />
 
 ---
 
 ### 🦠 Disease Detection
-![Disease](https://raw.githubusercontent.com/user-attachments/assets/57e86283-7d57-45f4-9e94-3dc5ea04315a)
+<img width="1819" height="903" alt="diseasedetectionpage" src="https://github.com/user-attachments/assets/5ad1722e-c465-4eee-b76f-20fc7b6a93e7" />
 
 ---
 
 ### 🌦️ Weather Page
-![Weather1](https://raw.githubusercontent.com/user-attachments/assets/0bb5207c-de4a-41c6-8b96-c5ba16c9a054)
 
-![Weather2](https://raw.githubusercontent.com/user-attachments/assets/137db89b-4377-497f-b2ca-2db787f33e58)
+![Uploading weather1.png…]()
+![Uploading weather2.png…]()
 
 ---
 
 ### 🤖 AI Chatbot
-![Chatbot](https://raw.githubusercontent.com/user-attachments/assets/2b4ea8c9-a6e4-44eb-94de-35aff48b2b6f)
+![Uploading ai chatbot.png…]()
+
 
 ---
 
 ### 🔐 Register Form
-![Register](https://raw.githubusercontent.com/user-attachments/assets/c3adb828-78fd-4090-a705-2936ee02dffd)
+![Uploading Register form.png…]()
+
 
 ---
 
 ### 🔑 Login Form
-![Login](https://raw.githubusercontent.com/user-attachments/assets/3a05bb0b-b2b5-4f33-88a0-7ea9b6e4213a)
+![Uploading login form.png…]()
 
 ## 📌 Track
 AI & Robotics  
