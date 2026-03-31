@@ -72,26 +72,30 @@ A full-stack real-time agriculture platform built using **MERN Stack + Next.js +
 ---
 
 ### 🌦️ Weather Page
+<img width="1890" height="932" alt="weather1" src="https://github.com/user-attachments/assets/fd16ba8f-36c4-464f-bb60-89e9070cf9af" />
+<img width="1882" height="889" alt="weather2" src="https://github.com/user-attachments/assets/052ab08c-9bca-4052-9526-c58c00e6649e" />
 
-![Uploading weather1.png…]()
-![Uploading weather2.png…]()
+
 
 ---
 
 ### 🤖 AI Chatbot
-![Uploading ai chatbot.png…]()
+<img width="1914" height="924" alt="ai chatbot" src="https://github.com/user-attachments/assets/cbf87651-e7e3-4c4b-829d-bb928cd8e614" />
+
 
 
 ---
 
 ### 🔐 Register Form
-![Uploading Register form.png…]()
+
+<img width="1855" height="896" alt="Register form" src="https://github.com/user-attachments/assets/f6a3f7ad-d4ab-458d-94e3-dc2a6f42c1de" />
 
 
 ---
 
 ### 🔑 Login Form
-![Uploading login form.png…]()
+<img width="1876" height="877" alt="login form" src="https://github.com/user-attachments/assets/ea8a72f8-5b0d-4c87-91ef-b12a81a55bba" />
+
 
 ## 📌 Track
 AI & Robotics  
